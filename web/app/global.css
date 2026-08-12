@@ -1,0 +1,182 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+@import 'katex/dist/katex.min.css';
+
+@source '../node_modules/fumadocs-ui/dist/**/*.js';
+
+/* ==========================================================================
+   Probabilistic Robotics via Rust — design tokens
+   --------------------------------------------------------------------------
+   Identity: "instrument panel". Cool neutrals, a phosphor-teal chrome accent,
+   and — the load-bearing rule — the four estimation colors are RESERVED for
+   data. Chrome never borrows them, so blue always means prior, orange always
+   means prediction, green always measurement, purple always posterior,
+   whether the reader is looking at a figure, an equation term, or a code
+   comment.
+   ========================================================================== */
+
+@theme {
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-prose: var(--font-source-serif), Georgia, 'Times New Roman', serif;
+  --font-ui: var(--font-plex-sans), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  /* Semantic estimation palette — the book's color code (TOC.md §2). */
+  --color-prior: #3b82f6;
+  --color-prediction: #f97316;
+  --color-measurement: #22c55e;
+  --color-posterior: #a855f7;
+  --color-truth: #6b7280;
+
+  /* Chrome accent: instrument phosphor, deliberately outside the data hues. */
+  --color-instrument: #0d9488;
+}
+
+:root {
+  --pr-prior: #3b82f6;
+  --pr-prediction: #ea580c;
+  --pr-measurement: #16a34a;
+  --pr-posterior: #9333ea;
+  --pr-truth: #6b7280;
+
+  --pr-grid: rgb(15 23 42 / 0.07);
+  --pr-canvas-bg: #fcfcfd;
+  --pr-canvas-ink: #0f172a;
+  --pr-wall: #334155;
+  --pr-free: #ffffff;
+  --pr-occupied: #0f172a;
+  --pr-unknown: #cbd5e1;
+
+  --color-fd-primary: #0d9488;
+  --color-fd-ring: #0d9488;
+}
+
+.dark {
+  /* Slightly lifted hues so each stays legible on a dark ground. */
+  --pr-prior: #60a5fa;
+  --pr-prediction: #fb923c;
+  --pr-measurement: #4ade80;
+  --pr-posterior: #c084fc;
+  --pr-truth: #94a3b8;
+
+  --pr-grid: rgb(226 232 240 / 0.09);
+  --pr-canvas-bg: #0d1117;
+  --pr-canvas-ink: #e2e8f0;
+  --pr-wall: #94a3b8;
+  --pr-free: #1e293b;
+  --pr-occupied: #f1f5f9;
+  --pr-unknown: #475569;
+
+  --color-fd-primary: #2dd4bf;
+  --color-fd-ring: #2dd4bf;
+}
+
+/* --------------------------------------------------------------------------
+   Reading surface
+   -------------------------------------------------------------------------- */
+
+body {
+  font-family: var(--font-ui);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+#nd-page article,
+.prose-book {
+  font-family: var(--font-prose);
+  font-size: 1.0625rem;
+  line-height: 1.72;
+}
+
+#nd-page h1,
+#nd-page h2,
+#nd-page h3,
+#nd-page h4,
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 550;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+
+#nd-page h2 {
+  margin-top: 2.75rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--color-fd-border);
+}
+
+#nd-page code,
+#nd-page kbd {
+  font-family: var(--font-mono);
+}
+
+/* Small caps eyebrow used by section labels and widget captions. */
+.eyebrow {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-fd-muted-foreground);
+}
+
+/* --------------------------------------------------------------------------
+   Math
+   -------------------------------------------------------------------------- */
+
+.katex { font-size: 1.045em; }
+
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.35rem 0;
+}
+
+/* KaTeX 0.18 renumbers equations page-globally; we number per chapter in the
+   text itself, and suppress the desynced MathML counter so screen readers do
+   not announce a different number than the one on screen. */
+.katex .mml-eqn-num::before {
+  content: none;
+  counter-increment: none;
+}
+
+/* Color-coded equation terms: \htmlClass{term-prior}{...} in MDX. */
+.term-prior { color: var(--pr-prior); }
+.term-prediction { color: var(--pr-prediction); }
+.term-measurement { color: var(--pr-measurement); }
+.term-posterior { color: var(--pr-posterior); }
+.term-truth { color: var(--pr-truth); }
+
+/* --------------------------------------------------------------------------
+   Simulation chrome
+   -------------------------------------------------------------------------- */
+
+.sim-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+  background: var(--pr-canvas-bg);
+}
+
+input[type='range'] {
+  accent-color: var(--color-fd-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Wide content never scrolls the page sideways. */
+#nd-page table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}

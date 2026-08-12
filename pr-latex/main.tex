@@ -1,0 +1,209 @@
+% =============================================================================
+%  Probabilistic Robotics via Rust — The FCP Way
+%  Print edition, in the Shannon Robotics design language.
+%
+%  Build:  make        (or: pdflatex main.tex, three times)
+% =============================================================================
+\documentclass[11pt, twoside, openright]{book}
+
+\usepackage[
+  paperwidth=7in, paperheight=10in,
+  inner=0.95in, outer=0.75in, top=0.85in, bottom=0.95in,
+  headsep=16pt, footskip=28pt
+]{geometry}
+
+\usepackage{shannon}
+
+\hypersetup{
+  pdftitle={Probabilistic Robotics via Rust --- The FCP Way},
+  pdfauthor={Shannon Robotics},
+  pdfsubject={Probabilistic robotics, state estimation, SLAM, Rust},
+  colorlinks=true,
+  linkcolor=shAccent,
+  urlcolor=shSkyDark,
+  citecolor=shAccent
+}
+
+\begin{document}
+
+% =============================================================================
+%  Front matter
+% =============================================================================
+\frontmatter
+\pagestyle{empty}
+
+\begin{titlepage}
+\thispagestyle{empty}
+\noindent
+{\color{shTeal}\rule{\textwidth}{3pt}}
+\vspace{2.2in}
+
+\noindent
+{\displayfont\fontsize{10}{12}\selectfont\color{shTealDark}%
+ \MakeUppercase{Shannon Robotics}}
+
+\vspace{10pt}
+\noindent
+{\displayfont\bfseries\fontsize{34}{39}\selectfont\color{shInk}%
+ Probabilistic Robotics\\via Rust}
+
+\vspace{12pt}
+\noindent
+{\displayfont\fontsize{16}{20}\selectfont\color{shInkMuted}%
+ The FCP Way}
+
+\vspace{20pt}
+\noindent
+{\color{shSlate300}\rule{2.4in}{0.6pt}}
+
+\vspace{16pt}
+\noindent
+\begin{minipage}{4.2in}
+{\fontsize{11}{15}\selectfont\color{shInkSecondary}%
+ Complete mathematical foundations, interactive intuition, and working
+ implementations in Rust --- for robots that must act without ever knowing
+ exactly where they are.}
+\end{minipage}
+
+\vfill
+\noindent
+{\displayfont\fontsize{9}{12}\selectfont\color{shInkMuted}%
+ Foundation \ \textperiodcentered\ \ Conceptual \ \textperiodcentered\ \ Practical}
+
+\vspace{6pt}
+\noindent
+{\color{shTeal}\rule{\textwidth}{3pt}}
+\end{titlepage}
+
+% ----- Colophon --------------------------------------------------------------
+\cleardoublepage
+\thispagestyle{empty}
+\vspace*{\fill}
+\noindent
+{\fontsize{9}{13}\selectfont\color{shInkSecondary}
+\textbf{Probabilistic Robotics via Rust --- The FCP Way}\par
+\vspace{5pt}
+Print edition, generated from the interactive web edition.\par
+\vspace{9pt}
+This book takes Thrun, Burgard and Fox's \emph{Probabilistic Robotics} as its
+spine and brings it forward: factor graphs as the inference back-end, estimation
+on Lie groups, scan matching and pose-graph SLAM, visual-inertial odometry,
+truncated signed distance fields, sampling-based stochastic control, online
+POMDP solvers, and active SLAM. Five further texts serve as baselines throughout
+--- Lynch \& Park's \emph{Modern Robotics} and Craig's \emph{Introduction to
+Robotics} for the geometry, Niku for sensing hardware, Choset et al.'s
+\emph{Principles of Robot Motion} for planning, and Spong, Hutchinson \&
+Vidyasagar for modelling and control.\par
+\vspace{9pt}
+Every chapter of the web edition carries interactive simulations that run the
+same algorithms the text derives. In this print edition each appears as a
+described figure with its widget identifier, so the two editions can be read
+side by side.\par
+\vspace{9pt}
+{\color{shInkMuted}Set in Space Grotesk and a Palatino-class serif.
+Composed with \LaTeX.}\par}
+\vspace*{\fill}
+
+% ----- How to read this book -------------------------------------------------
+\cleardoublepage
+\pagestyle{fancy}
+\chapter*{How to read this book}
+\addcontentsline{toc}{chapter}{How to read this book}
+
+Every chapter makes three passes over its subject, and they are meant to be read
+in this order.
+
+\textbf{Conceptual} comes first, because intuition should precede formalism. In
+the web edition you meet an interactive figure before you meet an equation; here
+that figure is described, and the description tells you what it would show you.
+
+\textbf{Foundation} is the mathematics, in full. Definitions are precise,
+assumptions are stated where they are made rather than buried, and derivations
+are carried to the end. Long algebra sits in marked derivation blocks, so you
+can take the result on faith the first time through and come back for the proof
+later.
+
+\textbf{Practical} is the Rust. Not pseudocode dressed up as code: real types,
+real crates, code you could lift into a robot.
+
+\section*{The running lab}
+
+Two worlds recur throughout, so that every new method can be compared against
+the last on identical ground. The \textbf{Hallway} is a one-dimensional corridor
+with indistinguishable doors --- it exists because a belief over a 1-D world can
+be drawn as a curve, which makes the Bayes filter visible in a way no
+two-dimensional picture manages. The \textbf{Apartment} is a 2-D floorplan with
+rooms, doorways and a long corridor, sensed by a simulated LiDAR, and
+deliberately a little symmetric, because ambiguity is where probabilistic
+methods earn their keep.
+
+The robot is \shrobotname{Rusty}, a differential-drive rover with wheel encoders
+and a laser scanner. Rusty is built in Chapter~4 and appears in every chapter
+after it; by Chapter~26 it explores and maps an apartment it has never seen.
+
+\section*{Colour carries meaning}
+
+One convention runs through the prose, the equations, the figures and the code
+comments alike. It is worth internalising before you start:
+
+\shcolorkey
+
+\noindent
+Blue is always what you believed before. Orange is always what you believe after
+moving. Green is always what a sensor said. Purple is always what you believe
+after taking that sensor seriously. Grey, where it appears, is the truth the
+robot does not have access to. The teal used for chapter furniture is
+deliberately outside this set, so it can never be mistaken for data.
+
+% ----- Contents --------------------------------------------------------------
+\cleardoublepage
+\setcounter{tocdepth}{0}
+\renewcommand{\contentsname}{Contents}
+\tableofcontents
+
+% =============================================================================
+%  Main matter
+% =============================================================================
+\mainmatter
+
+\part{Foundations: The Robot and Its Uncertainty}
+\input{chapters/ch01}
+\input{chapters/ch02}
+\input{chapters/ch03}
+\input{chapters/ch04}
+
+\part{The Bayes Filter Family}
+\input{chapters/ch05}
+\input{chapters/ch06}
+\input{chapters/ch07}
+\input{chapters/ch08}
+
+\part{Probabilistic Models}
+\input{chapters/ch09}
+\input{chapters/ch10}
+
+\part{Localization}
+\input{chapters/ch11}
+\input{chapters/ch12}
+
+\part{Mapping and SLAM}
+\input{chapters/ch13}
+\input{chapters/ch14}
+\input{chapters/ch15}
+\input{chapters/ch16}
+\input{chapters/ch17}
+\input{chapters/ch18}
+\input{chapters/ch19}
+
+\part{Planning and Acting under Uncertainty}
+\input{chapters/ch20}
+\input{chapters/ch21}
+\input{chapters/ch22}
+\input{chapters/ch23}
+\input{chapters/ch24}
+
+\part{Frontiers and Integration}
+\input{chapters/ch25}
+\input{chapters/ch26}
+
+\end{document}
