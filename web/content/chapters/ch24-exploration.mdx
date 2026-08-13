@@ -15,6 +15,8 @@ import { FrontierChaser } from '@/components/ch/ch24/frontier-chaser';
 import { DisambiguationDetour } from '@/components/ch/ch24/disambiguation-detour';
 import { LoopOrPushOn } from '@/components/ch/ch24/loop-or-push-on';
 import { StopSign } from '@/components/ch/ch24/stop-sign';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -66,7 +68,9 @@ re-scanned corridor is a metre of odometry drift bought for nothing. The widget 
 for you: 93 metres of lawn-mowing leaves 4% of the apartment unmapped, and it does not know that,
 because a script has no notion of what it has already learned.
 
-<FrontierChaser />
+<Deferred>
+  <FrontierChaser />
+</Deferred>
 
 Switch it to **Utility** and watch what changes. The robot now has an opinion. Every few seconds it
 stops, looks at its own map, finds the places where mapped free space touches the unknown, asks how
@@ -125,9 +129,11 @@ surprised. That shape is what makes stopping hard, and it is the last section of
 $\ell_i = \log \frac{p(m_i = 1)}{p(m_i = 0)}$, one per cell, and recovered probabilities with the
 logistic
 
+<LinkedMath>
 $$
 \htmlClass{term-prior}{p_i} \;=\; 1 - \frac{1}{1 + e^{\ell_i}}.
 $$
+</LinkedMath>
 
 Each cell is a Bernoulli variable, so its uncertainty is the binary entropy
 
@@ -139,9 +145,11 @@ which is $1$ at $p = \tfrac12$ (a cell you know nothing about) and $0$ at $p \in
 Chapter 13's standing approximation that cells are independent given the poses, the entropy of the
 whole map is a sum:
 
+<LinkedMath>
 $$
 \htmlClass{term-prior}{H(m)} \;=\; \sum_i H_b(p_i).
 $$
+</LinkedMath>
 
 That is the objective. It has units, it is computable in one pass over the array, and it starts at
 exactly the number of cells: the apartment at 15 cm resolution is $80 \times 60 = 4800$ cells, so
@@ -183,12 +191,14 @@ robot's uncertainty about the map is $H(m)$. Afterwards it will be $H(m \mid z_a
 reading $z$ arrives. The robot does not have $z$. What it has is a distribution over it, so the
 honest thing to score is the average:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{I(a)}
 \;=\; \htmlClass{term-prior}{H(m)} \;-\;
 \E_{z \sim p(z_a)}\!\left[\, \htmlClass{term-posterior}{H(m \mid z_a = z)} \,\right]
 \;=\; I(m ; z_a).
 $$
+</LinkedMath>
 
 The right-hand equality is the definition of mutual information, and it is the whole reason this
 quantity behaves. Two consequences follow immediately, and they are the two facts every
@@ -236,10 +246,12 @@ The entropy of that cell went *up* by 0.531 bits. It happens with probability
 $p(1-q) + (1-p)q = 0.18$. The other 82% of the time the reading is **occupied**, the posterior is
 $0.81/0.82 = 0.9878$, and the entropy falls to $0.0950$ bits. Averaging:
 
+<LinkedMath>
 $$
 \E_z[H_b] = 0.18 \cdot 1 + 0.82 \cdot 0.0950 = 0.2579,
 \qquad I = 0.4690 - 0.2579 = \htmlClass{term-measurement}{0.2111 \text{ bits}} > 0.
 $$
+</LinkedMath>
 
 So: the theorem holds, and your log will still show the map entropy jumping upward on individual
 scans. That is a *surprising measurement*, not a bug — the same event that makes the evidence term
@@ -255,10 +267,12 @@ factorizations make it cheap enough to evaluate for a dozen candidates several t
 and the gain is a sum of per-cell gains. For one cell with prior $p$, observed through a binary
 symmetric channel that reports correctly with probability $q$, the gain is closed form:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{I(m_i; z_i)}
 = H_b(p) - \Big[ P(\hat{z}{=}1)\,H_b\!\big(p \mid \hat{z}{=}1\big) + P(\hat{z}{=}0)\,H_b\!\big(p \mid \hat{z}{=}0\big) \Big].
 $$
+</LinkedMath>
 
 Two limits are worth carrying in your head. At $p = \tfrac12$ this collapses to the channel
 capacity $1 - H_b(q)$ — for $q = 0.9$ that is $0.5310$ bits, and no scan of an unknown cell can
@@ -268,16 +282,20 @@ nothing back.
 **Along a beam.** Cells on a ray are not reached independently. A beam arrives at the $k$-th cell
 only if every cell before it was empty, which gives the **reach probability**
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{R_k} \;=\; \prod_{j < k} \big(1 - p_j\big),
 $$
+</LinkedMath>
 
 a running product computed as the ray is traced. The expected gain of one beam is then each cell's
 gain, discounted by the chance the beam gets there:
 
+<LinkedMath>
 $$
 I(\text{beam}) \;=\; \sum_{k} \htmlClass{term-prediction}{R_k} \cdot \htmlClass{term-measurement}{I(m_k; z_k)}.
 $$
+</LinkedMath>
 
 <Derivation title="Beam-wise expected gain over an occupancy grid" result="I(a) \approx \sum_{\text{beams}} \sum_{k \in \text{ray}} R_k\, I(m_k; z_k)">
 **Step 1 — factor the map entropy over cells.** By Chapter 13's independence approximation,
@@ -467,10 +485,12 @@ the known set, not a better theorem.
 With a candidate set from `detect_frontiers` and a score from `expected_info_gain`, the selection
 stage is one line:
 
+<LinkedMath>
 $$
 a^\star = \arg\max_{a \in \mathcal{A}}\;
 \htmlClass{term-measurement}{w_I\, I(a)} \;+\; \htmlClass{term-posterior}{w_G\, \Delta_a} \;-\; w_C\, \htmlClass{term-truth}{C(a)}.
 $$
+</LinkedMath>
 
 Three things about that expression are worth stating plainly, because they are where deployed
 systems go wrong.
@@ -501,15 +521,19 @@ corrupts the map that the exploration objective is defined on.
 The narrower problem — choose motions that sharpen the *pose* belief — is **active localization**,
 and Fox, Burgard and Thrun formalized it in 1998 with a rule that is one line of decision theory:
 
+<LinkedMath>
 $$
 a^\star = \arg\max_a\;\Big[\, \htmlClass{term-prior}{H(\bel)} - \E_{z_a}\big[\, \htmlClass{term-posterior}{H(\bel')} \,\big] \Big] \;-\; w_C\,C(a),
 $$
+</LinkedMath>
 
 where $\bel'$ is the belief after pushing $\bel$ through the motion model for $a$ and then
 correcting with a hypothetical $z_a$. Both halves of the Bayes filter appear, run forwards, on a
 measurement that has not happened.
 
-<DisambiguationDetour />
+<Deferred>
+  <DisambiguationDetour />
+</Deferred>
 
 The corridor in that widget is built to make one point unavoidable. Its doors repeat every 2.5 m,
 and every candidate motion except one is a whole number of door spacings — so each of them lands
@@ -528,9 +552,11 @@ filter ever complains, because nothing it saw was surprising.
 $\delta_a$, form the predicted belief exactly as [Chapter 5](/chapters/ch05-bayes-filter)'s line 2
 does:
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\belbar(x)} = \int p(x \mid x', a)\, \htmlClass{term-prior}{\bel(x')}\, dx'.
 $$
+</LinkedMath>
 
 Prediction is a convolution, so $H(\belbar) \ge H(\bel)$: the motion itself always costs
 information. This is why "hold still and scan" is a candidate worth including — and why a pure
@@ -540,9 +566,11 @@ information objective, left alone, produces a robot that never goes anywhere.
 probability under the predicted belief is the *evidence* term of the Bayes filter, used as a
 forecast rather than as a normalizer after the fact:
 
+<LinkedMath>
 $$
 p(z \mid a) = \int \htmlClass{term-measurement}{p(z \mid x)}\, \htmlClass{term-prediction}{\belbar(x)}\, dx.
 $$
+</LinkedMath>
 
 With a discrete belief and a finite outcome set — a door detector with three answers, say — this
 sum is exact and no sampling is needed, which is why the widget's numbers can be checked by hand.
@@ -636,7 +664,9 @@ $\log\det\Omega = 2\sum_k \log L_{kk}$ — evaluating it for a candidate costs o
 roughly $O(n^{1.5})$ for a planar graph. That is what makes scoring a dozen candidate trajectories
 per decision affordable at all.
 
-<LoopOrPushOn />
+<Deferred>
+  <LoopOrPushOn />
+</Deferred>
 
 That widget hides a theorem, and the theorem is the reason active SLAM exists as a separate subject
 from exploration.
@@ -756,7 +786,9 @@ instead.
 
 Every run in this chapter ends. None of them ends for a principled reason.
 
-<StopSign />
+<Deferred>
+  <StopSign />
+</Deferred>
 
 The candidates are all defensible and all flawed. An **absolute entropy threshold** ("stop below 200
 bits") depends on the size of the map, so it does not transfer between buildings. An **entropy

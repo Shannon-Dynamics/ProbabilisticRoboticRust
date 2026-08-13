@@ -15,6 +15,8 @@ import { ReprojectionPlayground } from '@/components/ch/ch18/reprojection-playgr
 import { PreintegrationTimeline } from '@/components/ch/ch18/preintegration-timeline';
 import { MarginalizationFillIn } from '@/components/ch/ch18/marginalization-fillin';
 import { SystemArchitectures } from '@/components/ch/ch18/system-architectures';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -59,7 +61,9 @@ you a *direction*: the corner lies somewhere on the ray through the optical cent
 Slide the camera forward along that ray, and slide the corner with it, and the picture is
 byte-for-byte identical. A pixel is a bearing.
 
-<ReprojectionPlayground />
+<Deferred>
+  <ReprojectionPlayground />
+</Deferred>
 
 Watch the left-hand image pane while the purple estimate slides along the green ray. Camera 0's
 residual is not *small*; it is exactly zero, at every depth, forever. The measurement is perfectly
@@ -130,6 +134,7 @@ first, and only then ask what algorithm can invert it. For a pinhole camera the 
 
 The measurement equation, and everything else in this chapter is a consequence of it:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{\vv{z}_{kj}}
 = \pi\big(\htmlClass{term-posterior}{T_{cw,k}}\, \htmlClass{term-posterior}{{}^{w}\vv{P}_j}\big)
@@ -137,6 +142,7 @@ $$
 \qquad
 \boldsymbol{\delta}_{kj} \sim \Normal(\vv{0},\, \sigma_{\text{px}}^2 \mat{I}_2)
 $$
+</LinkedMath>
 
 Two remarks on the noise. First, $\sigma_{\text{px}}$ of one to two pixels is a statement about the
 *detector*, not the optics, and it is the same number for a point at 1 m and a point at 50 m —
@@ -150,10 +156,12 @@ kernels exist for that, and every deployed visual system uses one.
 The MAP estimate over keyframe poses $\{T_{cw,k}\}$ and points $\{{}^{w}\vv{P}_j\}$ minimizes the
 negative log-likelihood of every observation. With Gaussian pixel noise that is a sum of squares:
 
+<LinkedMath>
 $$
 \{T^\star, \vv{P}^\star\} = \arg\min \sum_{(k,j) \in \mathcal{O}}
 \tfrac{1}{2}\,\big\|\underbrace{\htmlClass{term-measurement}{\vv{z}_{kj}} - \pi(T_{cw,k}\,{}^{w}\vv{P}_j)}_{\vv{e}_{kj}}\big\|^2_{\mat{Q}_{\text{px}}^{-1}}
 $$
+</LinkedMath>
 
 That is bundle adjustment, and it is a factor graph: one variable per keyframe, one per point, one
 binary factor per observation. Chapter 15's Gauss–Newton needs exactly two Jacobian blocks per
@@ -229,6 +237,7 @@ that converges to the wrong thing at a quarter of the expected rate.
 Stack the unknowns as poses $\boldsymbol{\xi}$ then points $\vv{p}$. Because no factor ever touches
 two points, the normal equations have an arrowhead:
 
+<LinkedMath>
 $$
 \begin{pmatrix}
 \htmlClass{term-posterior}{\mat{H}_{pp}} & \mat{H}_{pl} \\
@@ -240,6 +249,7 @@ $$
 \qquad
 \mat{H}_{ll} = \diag(\mat{H}_1, \ldots, \mat{H}_L)
 $$
+</LinkedMath>
 
 $\mat{H}_{ll}$ is block diagonal with $3 \times 3$ blocks, so inverting it costs $L$ tiny inverses.
 Eliminating the points is Chapter 15's variable elimination with a favourable ordering, and it has
@@ -318,9 +328,11 @@ accelerometer.
 least-squares system. For the classic fronto-parallel pair with baseline $b$, disparity is
 $d = f b / Z$, so $|\mathrm{d}Z/\mathrm{d}d| = Z^2/(f b)$ and
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\sigma_Z} = \frac{Z^2\,\sigma_{\text{px}}}{f\,b}
 $$
+</LinkedMath>
 
 **Step 5 — degeneracy.** If the motion is a pure rotation then $\vv{t} = \vv{0}$, $\mat{E}$
 vanishes identically, the two camera centres coincide, and the parallax angle at every point is
@@ -348,11 +360,13 @@ Those five numbers are the reason this chapter exists, and each of them is pinne
 
 Now the second sensor. A strapdown IMU reports, in the body frame,
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{\tilde{\boldsymbol{\omega}}_k} = \boldsymbol{\omega}_k + \vv{b}_g + \boldsymbol{\eta}_g,
 \qquad
 \htmlClass{term-measurement}{\tilde{\vv{a}}_k} = \mat{R}_k^\mathsf{T}\big(\vv{a}_k - \vv{g}\big) + \vv{b}_a + \boldsymbol{\eta}_a
 $$
+</LinkedMath>
 
 Read that second equation carefully, because it contains the chapter's other big misconception. An
 accelerometer does not measure acceleration; it measures **specific force**, which is acceleration
@@ -399,6 +413,7 @@ residual the optimizer can evaluate in constant time, for any states it currentl
 
 **Step 3 — the residual.** With $\vv{r} = (\vv{r}_{\Delta R}, \vv{r}_{\Delta v}, \vv{r}_{\Delta p})$,
 
+<LinkedMath>
 $$
 \begin{aligned}
 \vv{r}_{\Delta R} &= \operatorname{Log}\big(\Delta\tilde{\mat{R}}_{ij}^\mathsf{T}\, \mat{R}_i^\mathsf{T} \mat{R}_j\big) \\
@@ -406,6 +421,7 @@ $$
 \vv{r}_{\Delta p} &= \htmlClass{term-posterior}{\mat{R}_i^\mathsf{T}(\vv{p}_j - \vv{p}_i - \vv{v}_i\Delta t_{ij} - \tfrac12 \vv{g}\Delta t_{ij}^2)} - \htmlClass{term-measurement}{\Delta\tilde{\vv{p}}_{ij}}
 \end{aligned}
 $$
+</LinkedMath>
 
 One nine-dimensional factor tying two navigation states. Purple is what the estimator believes;
 green is what the IMU reported.
@@ -470,7 +486,9 @@ $\delta\vv{b}$: over a one-second turn, a bias error of 0.1 rad/s (about 6°/s, 
 gyro) leaves the corrected $\Delta\vv{p}$ 0.2 mm away from the re-integrated one, and cutting the
 bias error by ten cuts that by a hundred.
 
-<PreintegrationTimeline />
+<Deferred>
+  <PreintegrationTimeline />
+</Deferred>
 
 Two things in that widget deserve a second look. First, the covariance panel: after one second at
 200 Hz the factor's own uncertainty is 3.5 mrad in attitude, 2.6 cm/s in velocity, and 1.3 cm in
@@ -517,15 +535,19 @@ the last few keyframes, their velocities and biases, and the live features, and 
 nonlinear problem every frame. When a keyframe falls off the back, they marginalize it in
 information form:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\boldsymbol{\Omega}'} = \boldsymbol{\Omega}_{\beta\beta}
 - \boldsymbol{\Omega}_{\beta\alpha}\boldsymbol{\Omega}_{\alpha\alpha}^{-1}\boldsymbol{\Omega}_{\alpha\beta}
 $$
+</LinkedMath>
 
 which is, once again, the Schur complement — the same operation, now applied to states rather than
 points. It is exact. It is also not free, and the bill has two lines.
 
-<MarginalizationFillIn />
+<Deferred>
+  <MarginalizationFillIn />
+</Deferred>
 
 **Line one: fill-in.** Every pair of survivors that touched the departing variable becomes directly
 coupled. The prior densifies, monotonically, and there is no ordering that prevents it — the
@@ -1069,7 +1091,9 @@ Everything above is machinery. A working visual-inertial SLAM system is machiner
 of engineering judgement about when to trust it, and the two most-cited open systems make almost
 opposite engineering choices while agreeing completely about the mathematics.
 
-<SystemArchitectures />
+<Deferred>
+  <SystemArchitectures />
+</Deferred>
 
 **ORB-SLAM3** (Campos et al., 2021) is feature-based and map-centric: ORB descriptors, three
 parallel threads, and an *Atlas* of sub-maps so that losing tracking starts a new map instead of

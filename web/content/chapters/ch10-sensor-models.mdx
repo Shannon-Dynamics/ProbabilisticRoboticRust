@@ -15,6 +15,8 @@ import { BeamMixtureMixer } from '@/components/ch/ch10/beam-mixture-mixer';
 import { LikelihoodFieldExplorer } from '@/components/ch/ch10/likelihood-field-explorer';
 import { OverconfidenceMeter } from '@/components/ch/ch10/overconfidence-meter';
 import { LandmarkDonut } from '@/components/ch/ch10/landmark-donut';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -58,7 +60,9 @@ Park Rusty in the corridor outside room A and aim a single beam south, through t
 far wall of the apartment. The map says the range is 4.4 m. Fire the beam ten thousand times and
 histogram what comes back.
 
-<BeamMixtureMixer />
+<Deferred>
+  <BeamMixtureMixer />
+</Deferred>
 
 Nothing about that shape is a bell curve, and the deviations are not small.
 
@@ -149,9 +153,11 @@ different story, and Step 6 of the EM derivation below explains exactly why.
 A scan is a set of readings, and the model of the whole scan is the product of the models of its
 parts:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{p(z_t \mid x_t, m)} = \prod_{k=1}^{K} p(z_t^k \mid x_t, m)
 $$
+</LinkedMath>
 
 This is a conditional independence assumption — that given the pose and the map, the beams do not
 share anything. It is false. Thrun says so on the page where he introduces it, and then defers the
@@ -162,10 +168,12 @@ and one that is confidently lost. The last section of this chapter measures the 
 
 Per beam, four causes, four densities, four weights that sum to one:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{p(z_t^k \mid x_t, m)} =
 z_{hit}\, p_{hit}(z_t^k) + z_{short}\, p_{short}(z_t^k) + z_{max}\, p_{max}(z_t^k) + z_{rand}\, p_{rand}(z_t^k)
 $$
+</LinkedMath>
 
 $$
 z_{hit} + z_{short} + z_{max} + z_{rand} = 1
@@ -174,17 +182,21 @@ $$
 with, writing $\htmlClass{term-truth}{z^{k*}}$ for the ray-cast range and $\mathbb{1}[\cdot]$ for
 the indicator of a condition,
 
+<LinkedMath>
 $$
 p_{hit}(z) = \eta\, \Normal\big(z;\ \htmlClass{term-truth}{z^{k*}},\ \sigma_{hit}^2\big)\ \mathbb{1}[0 \le z \le z_{max}],
 \qquad
 \eta = \left[\int_0^{z_{max}} \Normal(z;\ z^{k*},\ \sigma_{hit}^2)\, dz\right]^{-1}
 $$
+</LinkedMath>
 
+<LinkedMath>
 $$
 p_{short}(z) = \eta_s\, \lambda_{short}\, e^{-\lambda_{short} z}\ \mathbb{1}\big[0 \le z \le \htmlClass{term-truth}{z^{k*}}\big],
 \qquad
 \eta_s = \frac{1}{1 - e^{-\lambda_{short} z^{k*}}}
 $$
+</LinkedMath>
 
 $$
 p_{max}(z) = \mathbb{1}[z = z_{max}]
@@ -248,10 +260,12 @@ independent one-line maximum-likelihood problems. That is the entire reason EM i
 expectation of Step 1 over $c_i$ given the current $\Theta$. The required posterior is Bayes rule
 on a four-way discrete variable:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{e_{i,c}} = p(c_i = c \mid z_i, x_i, m, \Theta)
 = \frac{z_c\, p_c(z_i \mid x_i, m)}{\sum_{c'} z_{c'}\, p_{c'}(z_i \mid x_i, m)}
 $$
+</LinkedMath>
 
 The denominator is the mixture likelihood of the reading — the same number `beam_range_finder_model`
 computes per beam. So the E-step costs one extra pass over data you were evaluating anyway.
@@ -261,9 +275,11 @@ $\sum_c z_c = 1$ with a Lagrange multiplier $\mu$ gives
 $\partial/\partial z_c: \sum_i e_{i,c}/z_c = \mu$, so $z_c \propto \sum_i e_{i,c}$, and the
 constraint fixes the constant because $\sum_c \sum_i e_{i,c} = |Z|$:
 
+<LinkedMath>
 $$
 z_c = \frac{1}{|Z|}\sum_i \htmlClass{term-posterior}{e_{i,c}}
 $$
+</LinkedMath>
 
 The weights are just the average responsibility. Nothing about this step knows what the components
 *are*.
@@ -272,9 +288,11 @@ The weights are just the average responsibility. Nothing about this step knows w
 truncation normalizer for the moment, the objective is the usual weighted Gaussian log-likelihood
 in the residuals $z_i - z_i^*$, whose maximizer is the responsibility-weighted second moment:
 
+<LinkedMath>
 $$
 \sigma_{hit}^2 = \frac{\sum_i e_{i,hit}\,(z_i - \htmlClass{term-truth}{z_i^*})^2}{\sum_i e_{i,hit}}
 $$
+</LinkedMath>
 
 **Step 5 — M-step for $\lambda_{short}$.** Likewise, $\sum_i e_{i,short}(\log\lambda - \lambda z_i)$
 is maximized at the reciprocal of the responsibility-weighted mean:
@@ -345,7 +363,9 @@ frame now slips past it; $z^{k*}$ jumps from 0.8 m to 6 m; that beam's likelihoo
 everything that has to search it — a particle filter with a finite number of particles, a hill
 climber, an optimizer — suffers.
 
-<LikelihoodFieldExplorer />
+<Deferred>
+  <LikelihoodFieldExplorer />
+</Deferred>
 
 The likelihood field is the fix, and it is worth being honest about what kind of fix it is. It is
 not a better model of the sensor. It is not a generative model of $z$ at all — it does not
@@ -367,9 +387,11 @@ applied to $(x_{k,sens},\ y_{k,sens})$ — and the last term walks the measured 
 beam's own bearing. Then ask only how far that point is from the nearest obstacle — *any* obstacle,
 no correspondence, no ray:
 
+<LinkedMath>
 $$
 q \mathrel{{\times}{=}} \Big(\htmlClass{term-measurement}{z_{hit}\, \Normal\big(d(x_{z^k}, y_{z^k});\ 0,\ \sigma_{hit}^2\big)} + \frac{z_{rand}}{z_{max}}\Big)
 $$
+</LinkedMath>
 
 Max-range readings are skipped outright. "I saw nothing" projects to a point 8 m away that means
 nothing at all, and scoring it would punish poses for a beam that carries no information.
@@ -492,12 +514,14 @@ $$
 \hat\phi = \operatorname{atan2}(m_{j,y} - y,\ m_{j,x} - x) - \theta
 $$
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{p(f_t^i \mid c_t^i, x_t, m)} =
 \Normal(r_t^i - \hat r;\ 0, \sigma_r^2)\;
 \Normal(\phi_t^i - \hat\phi;\ 0, \sigma_\phi^2)\;
 \Normal(s_t^i - m_{j,s};\ 0, \sigma_s^2)
 $$
+</LinkedMath>
 
 <Algorithm
   name="landmark_model_known_correspondence(f_t^i, c_t^i, x_t, m)"
@@ -566,7 +590,9 @@ kidnapped robot recover in one step. $\blacksquare$
 8. return $(x\ \ y\ \ \theta)\T$
 </Algorithm>
 
-<LandmarkDonut />
+<Deferred>
+  <LandmarkDonut />
+</Deferred>
 
 The counting argument is worth stating once, because it governs every feature-based estimator in
 Part V. Each detection supplies two numbers about the pose — a range and a bearing — and the pose
@@ -587,7 +613,9 @@ They are not, and the dependence is not subtle: a person standing in front of th
 twenty adjacent beams at once, and a map that is 2 cm off corrupts *every* beam in the same
 direction, forever.
 
-<OverconfidenceMeter />
+<Deferred>
+  <OverconfidenceMeter />
+</Deferred>
 
 <Derivation title="What false independence costs, and the three ways to pay it back" result="log p(z | x)^{1/κ} = (1/κ) Σ_k log p(z_t^k | x, m)">
 **Step 1 — the extreme case.** Suppose two beams are perfectly correlated: $z^2 \equiv z^1$. The
@@ -626,11 +654,13 @@ truth — it is $-0.03$ with the correct map and $+0.44$ with the wrong one.
 **Step 4 — the three repairs are one repair.** Subsample every $\kappa$-th beam; inflate
 $\sigma_{hit}$; or temper,
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{p(z_t \mid x_t, m)^{1/\kappa}}
 \qquad\Longleftrightarrow\qquad
 \frac{1}{\kappa}\sum_k \log p(z_t^k \mid x_t, m)
 $$
+</LinkedMath>
 
 All three flatten the likelihood surface; they differ in what else they do. Subsampling throws away
 $1 - 1/\kappa$ of the data, so the peak moves as well as widening — measured on the same scan,

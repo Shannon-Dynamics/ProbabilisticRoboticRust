@@ -15,6 +15,8 @@ import { LinearizationLens } from '@/components/ch/ch07/linearization-lens';
 import { ManifoldVsVector } from '@/components/ch/ch07/manifold-vs-vector';
 import { ErrorStateLedger } from '@/components/ch/ch07/error-state-ledger';
 import { FilterChooser } from '@/components/ch/ch07/filter-chooser';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -68,7 +70,9 @@ approximation error at all; it is the arithmetic being wrong.
 
 The chapter deals with them in that order.
 
-<LinearizationLens />
+<Deferred>
+  <LinearizationLens />
+</Deferred>
 
 Watch the sweep for a few passes before reading on. Three things are worth noticing.
 
@@ -98,11 +102,13 @@ formulation removes an entirely different error that neither of them ever addres
 
 Everything below concerns a system of the form
 
+<LinkedMath>
 $$
 x_t = \htmlClass{term-prediction}{g(u_t, x_{t-1})} + \varepsilon_t,
 \qquad
 z_t = \htmlClass{term-measurement}{h(x_t)} + \delta_t
 $$
+</LinkedMath>
 
 with $\varepsilon_t \sim \Normal(0, R_t)$ and $\delta_t \sim \Normal(0, Q_t)$ independent across
 time, exactly as in [Chapter 6](/chapters/ch06-kalman-filters) except that $g$ and $h$ are now
@@ -132,17 +138,21 @@ The move is the smallest one that could possibly work: replace $g$ and $h$ by th
 Taylor expansions about the best point available, then run [Chapter
 6](/chapters/ch06-kalman-filters) unchanged.
 
+<LinkedMath>
 $$
 g(u_t, x_{t-1}) \;\approx\; g(u_t, \mu_{t-1}) + \htmlClass{term-prediction}{G_t}\,(x_{t-1} - \mu_{t-1}),
 \qquad
 G_t = \left.\frac{\partial g(u_t, x)}{\partial x}\right|_{x = \mu_{t-1}}
 $$
+</LinkedMath>
 
+<LinkedMath>
 $$
 h(x_t) \;\approx\; h(\bar\mu_t) + \htmlClass{term-measurement}{H_t}\,(x_t - \bar\mu_t),
 \qquad
 H_t = \left.\frac{\partial h(x)}{\partial x}\right|_{x = \bar\mu_t}
 $$
+</LinkedMath>
 
 The choice of expansion point matters and is not arbitrary: for a Gaussian, the most likely state
 is the mean, so the linearization is at least correct where the belief says the state most probably
@@ -167,11 +177,13 @@ $$
 **Step 2 — read off the prediction.** Every step of Chapter 6's derivation now goes through with
 $A_t \mapsto G_t$, and completing the square gives
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\bar\mu_t} = g(u_t, \mu_{t-1}),
 \qquad
 \htmlClass{term-prediction}{\bar\Sigma_t} = G_t \htmlClass{term-prior}{\Sigma_{t-1}} G_t\T + R_t
 $$
+</LinkedMath>
 
 Notice the asymmetry, because it is the single most important line in this chapter: **the mean
 propagates through the true $g$; only the covariance goes through the linearization.** The EKF is
@@ -181,17 +193,21 @@ the mean, which is the same thing here, but the distinction becomes real the mom
 **Step 3 — the correction.** The measurement update is a product of Gaussians. With the linearized
 $h$ the second factor is Gaussian in $x_t$, and the same completing-the-square algebra returns
 
+<LinkedMath>
 $$
 S_t = H_t \bar\Sigma_t H_t\T + Q_t,
 \qquad
 \htmlClass{term-measurement}{K_t} = \bar\Sigma_t H_t\T S_t^{-1}
 $$
+</LinkedMath>
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\mu_t} = \bar\mu_t + K_t\big(z_t - h(\bar\mu_t)\big),
 \qquad
 \htmlClass{term-posterior}{\Sigma_t} = (I - K_t H_t)\,\bar\Sigma_t
 $$
+</LinkedMath>
 
 Again the innovation uses the true $h(\bar\mu_t)$, not $H_t \bar\mu_t$.
 
@@ -480,7 +496,9 @@ Run it on this example and it returns $0.966314$ and $0.051667$, the numbers in 
 Everything so far has been about approximating a function well. The rest of this chapter is about a
 mistake that survives any amount of good approximation.
 
-<ManifoldVsVector />
+<Deferred>
+  <ManifoldVsVector />
+</Deferred>
 
 Run it until Rusty crosses the seam. The orange filter is not badly approximating anything — its
 Jacobian is exactly $1$, its linearization is exact, and it is still catastrophically wrong. It
@@ -550,11 +568,13 @@ satisfies the axioms trivially. Everything that follows therefore contains [Chap
 Take the EKF algorithm and replace every state-space `+` with $\bplus$ and every state-space `−`
 with $\bminus$. Two lines change; nothing else does.
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\bar\mu_t} = g(u_t, \mu_{t-1}),
 \qquad
 \htmlClass{term-posterior}{\mu_t} = \bar\mu_t \bplus K_t\big(z_t \bminus h(\bar\mu_t)\big)
 $$
+</LinkedMath>
 
 The covariance equations are untouched, because covariances were always tangent-space objects; we
 simply never said so. What *does* change is the meaning of the Jacobians, which are now derivatives
@@ -644,7 +664,9 @@ state** $\varepsilon_t = x_t \bminus \mu_t \in \R^d$, which is the only thing th
 ever sees. The error is zero-mean by construction and stays small by construction, because every
 correction is immediately *injected* into the nominal state and the error *reset* to zero.
 
-<ErrorStateLedger />
+<Deferred>
+  <ErrorStateLedger />
+</Deferred>
 
 The two panels are the argument in one picture. On the left, seven metres of travel and a heading that
 sweeps the whole circle; on the right, an error that never leaves a hand-sized box. A first-order expansion of the
@@ -1094,7 +1116,9 @@ the previous section drives the same `EskfSe2`.
 
 ## Choosing a filter
 
-<FilterChooser />
+<Deferred>
+  <FilterChooser />
+</Deferred>
 
 The plane has two axes because the bias has two factors. The strip above it has neither, because
 the question it asks — *is the state even a vector space?* — is not a matter of degree. Answer that

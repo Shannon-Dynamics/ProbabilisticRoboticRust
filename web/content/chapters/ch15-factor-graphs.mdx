@@ -15,6 +15,8 @@ import { SpringGraphOptimizer } from '@/components/ch/ch15/spring-graph-optimize
 import { SparsityScope } from '@/components/ch/ch15/sparsity-scope';
 import { DescentDuel } from '@/components/ch/ch15/descent-duel';
 import { KernelGallery } from '@/components/ch/ch15/kernel-gallery';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -69,7 +71,9 @@ update that can distribute the contradiction backwards across all of them.
 So stop filtering. Put all 189 unknown numbers on the table at once and ask what values make the
 whole data set most probable.
 
-<SpringGraphOptimizer />
+<Deferred>
+  <SpringGraphOptimizer />
+</Deferred>
 
 Three things in that widget deserve your attention before any mathematics.
 
@@ -148,12 +152,14 @@ motion model of [Chapter 9](/chapters/ch09-motion-models), the measurement model
 landmark each observation belongs to. ([Chapter 16](/chapters/ch16-scan-matching) removes that
 assumption, and the robust machinery at the end of this chapter is what makes removing it survivable.)
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{p(x_{0:t}, m \mid z_{1:t}, u_{1:t})} \;\propto\;
 \htmlClass{term-prior}{p(x_0)}
 \prod_{\tau=1}^{t} \htmlClass{term-prediction}{p(x_\tau \mid x_{\tau-1}, u_\tau)}
 \prod_{\tau=1}^{t} \prod_{i} \htmlClass{term-measurement}{p(z_\tau^i \mid x_\tau, m_{c_\tau^i})}
 $$
+</LinkedMath>
 
 Read the right-hand side as a drawing. Each factor is a small box; each box is wired to the two or
 three variables it mentions. The prior box touches $x_0$. Each motion box touches a consecutive pair
@@ -170,27 +176,32 @@ cheaper than full Bayesian inference: we never have to compute the evidence.)
 **Step 2 — substitute Gaussian noise models.** Each factor is a Gaussian in its own residual. For the
 motion factor, the noise lives on the manifold, so the residual is a $\bminus$, not a subtraction:
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{r_{u_\tau}} = (x_{\tau-1}^{-1} x_\tau) \bminus \delta_\tau
 = \log\!\big(\delta_\tau^{-1}\, x_{\tau-1}^{-1}\, x_\tau\big) \in \R^3,
 \qquad
 p(x_\tau \mid x_{\tau-1}, u_\tau) \propto \exp\!\Big(-\tfrac12 \norm{r_{u_\tau}}^2_{\Sigma_u}\Big)
 $$
+</LinkedMath>
 
 where $\delta_\tau = \operatorname{odom}(u_\tau)$ is the relative pose the wheels reported. For a
 range–bearing observation the residual is ordinary subtraction with the bearing wrapped to
 $(-\pi, \pi]$:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{r_{z_\tau^i}} = h(x_\tau, m_{c_\tau^i}) - z_\tau^i,
 \qquad
 h(x, m) = \begin{pmatrix} \norm{{}^{b}m} \\ \operatorname{atan2}({}^{b}m_y, {}^{b}m_x)\end{pmatrix},
 \quad {}^{b}m = R(\theta)\T (m - t)
 $$
+</LinkedMath>
 
 **Step 3 — take minus the logarithm.** Products become sums and Gaussian densities become half
 squared Mahalanobis norms:
 
+<LinkedMath>
 $$
 -\log \htmlClass{term-posterior}{p(y \mid z, u)} \;=\;
 \underbrace{\tfrac12 \norm{x_0 \bminus \bar x_0}^2_{\Sigma_0}}_{\htmlClass{term-prior}{\text{prior}}}
@@ -198,6 +209,7 @@ $$
 + \underbrace{\tfrac12 \sum_{\tau,i} \norm{r_{z_\tau^i}}^2_{\Sigma_z}}_{\htmlClass{term-measurement}{\text{observations}}}
 + \text{const}
 $$
+</LinkedMath>
 
 **Step 4 — read each summand as an edge.** The formula *is* the picture: one term per box in the
 drawing, each depending on only the variables its box is wired to. Define
@@ -263,11 +275,13 @@ $$
 
 **Step 3 — differentiate and set to zero.** With $\Omega = A\T A$ and $b = A\T \bar r$,
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\Omega}\,\Delta = -\,\htmlClass{term-measurement}{b},
 \qquad
 \Omega = \sum_k J_k\T J_k, \quad b = \sum_k J_k\T \bar r_k
 $$
+</LinkedMath>
 
 The sums matter more than the matrices: **assembly is a loop over factors**, each writing into only
 its own blocks. Nothing is ever formed densely unless you ask for it.
@@ -359,9 +373,11 @@ Gauss–Newton believes its own linearization completely. Where the cost valley 
 means anywhere a large rotation is being corrected — that belief produces a step that lands somewhere
 absurd. Levenberg–Marquardt adds a knob:
 
+<LinkedMath>
 $$
 \big(\htmlClass{term-posterior}{\Omega} + \lambda \diag \Omega\big)\, \Delta = -b
 $$
+</LinkedMath>
 
 As $\lambda \to 0$ this is Gauss–Newton. As $\lambda \to \infty$ it becomes
 $\Delta \approx -(\lambda \diag\Omega)^{-1} b$, a very short step along the (scaled) negative
@@ -369,7 +385,9 @@ gradient: slow, but it cannot be wrong about direction. Marquardt's $\diag\Omega
 than $\lambda I$ — makes the trust region an ellipsoid shaped like the problem, so a well-determined
 direction is not damped as hard as a poorly-determined one.
 
-<DescentDuel />
+<Deferred>
+  <DescentDuel />
+</Deferred>
 
 The schedule is the algorithm's only cleverness. Compare the reduction the linear model *promised*
 with the reduction actually delivered:
@@ -403,12 +421,14 @@ and only need to re-solve — and it is what makes LM the default in every produ
 
 Three scalar positions on a line, four unit-information factors:
 
+<LinkedMath>
 $$
 \htmlClass{term-prior}{y_0 = 0}, \qquad
 \htmlClass{term-prediction}{y_1 - y_0 = 1}, \qquad
 \htmlClass{term-prediction}{y_2 - y_1 = 1}, \qquad
 \htmlClass{term-measurement}{y_2 = 1.5}
 $$
+</LinkedMath>
 
 The prior and the fix disagree: dead reckoning says $y_2 = 2$, the absolute measurement says $1.5$.
 Start from $y = (0,0,0)$, where the residuals are $r = (0,\, -1,\, -1,\, -1.5)$ and
@@ -428,9 +448,11 @@ Notice the shape: tridiagonal, because the only variables sharing a factor are n
 $\Omega \Delta = -b$ by elimination gives, in one step (the problem is linear, so Gauss–Newton
 converges exactly once):
 
+<LinkedMath>
 $$
 \hat y = \htmlClass{term-posterior}{(-0.125,\ 0.75,\ 1.625)}
 $$
+</LinkedMath>
 
 Now read the answer. Both odometry intervals came out $0.875$ — *equally* shortened, though only the
 second one is adjacent to the disagreeing measurement. And all four residuals end at exactly
@@ -473,7 +495,9 @@ them; the correlations still exist, implicitly, as paths through the graph. Spar
 approximation here. It is what not throwing anything away looks like.
 </Derivation>
 
-<SparsityScope />
+<Deferred>
+  <SparsityScope />
+</Deferred>
 
 ### Elimination is the Schur complement is `EIF_reduce`
 
@@ -611,7 +635,9 @@ switched off entirely. And there is the bill — a redescending $\rho$ is non-co
 grows extra local minima, one of which sits on top of the outlier. $\blacksquare$
 </Derivation>
 
-<KernelGallery />
+<Deferred>
+  <KernelGallery />
+</Deferred>
 
 Run the numbers on the Apartment loop with a 1.6 m lie injected into one loop closure, and the theory
 is visible in three digits:

@@ -15,6 +15,8 @@ import { TsdfSculptor } from '@/components/ch/ch19/tsdf-sculptor';
 import { RepresentationGallery } from '@/components/ch/ch19/representation-gallery';
 import { Wavefront } from '@/components/ch/ch19/wavefront';
 import { PhotometricDescent } from '@/components/ch/ch19/photometric-descent';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -69,7 +71,9 @@ sampling planner performs.
 So store the distance instead of the bit. That single decision is what the rest of the chapter
 falls out of.
 
-<TsdfSculptor />
+<Deferred>
+  <TsdfSculptor />
+</Deferred>
 
 Watch one lap before reading on. Three things are happening, and each is a section of this chapter.
 
@@ -102,7 +106,9 @@ with the same poses (optimized by [Chapter 16](/chapters/ch16-scan-matching)'s p
 is a *mapping* chapter and not a SLAM chapter), fused into four representations at once, with
 meters underneath measuring what each one actually costs.
 
-<RepresentationGallery />
+<Deferred>
+  <RepresentationGallery />
+</Deferred>
 
 The ranking is not stable. That is the point.
 
@@ -160,6 +166,7 @@ space recursively; each leaf stores exactly what a grid cell stored, the log odd
 occupancy, and each leaf runs exactly the recursion of
 [Chapter 13](/chapters/ch13-occupancy-grids), with one addition:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\ell_{t,i}} = \mathrm{clamp}\Bigl(
   \htmlClass{term-prior}{\ell_{t-1,i}}
@@ -167,6 +174,7 @@ $$
   - \ell_0,\;
   \ell_{\min},\, \ell_{\max}\Bigr)
 $$
+</LinkedMath>
 
 The clamp came into Chapter 13 as a patch for the "stubborn map" problem: an unclamped cell that has
 seen forty consistent readings needs forty contradicting ones to change its mind. Hornung et al.
@@ -326,10 +334,12 @@ Two lines of code, no probability anywhere in sight. It is a Bayes filter, and h
 **Model.** Voxel $v$ has an unknown, *static* truncated signed distance $\Phi(v)$. Scan $t$ delivers
 a noisy projective observation of it,
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{d_t(v)} = \Phi(v) + \varepsilon_t,
 \qquad \varepsilon_t \sim \Normal\!\left(0,\; \frac{\sigma^2}{w_t(v)}\right)
 $$
+</LinkedMath>
 
 so the weight $w_t$ is an inverse variance: a beam we trust twice as much gets twice the weight. The
 prior is flat.
@@ -345,11 +355,13 @@ Differentiate, set to zero, and the MAP estimate is the weighted mean — the sa
 [Chapter 15](/chapters/ch15-factor-graphs) used to turn a factor graph into least squares, here with
 a one-dimensional state and no Jacobians to compute:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\hat{\Phi}_t} = \frac{\sum_k w_k d_k}{\sum_k w_k},
 \qquad
 \htmlClass{term-posterior}{\Omega_t} = \frac{\sum_k w_k}{\sigma^2} = \frac{W_t}{\sigma^2}
 $$
+</LinkedMath>
 
 The posterior precision is the accumulated weight, up to the constant $\sigma^2$. That is
 [Chapter 6](/chapters/ch06-kalman-filters)'s information matrix $\Omega$, in one dimension, and its
@@ -358,6 +370,7 @@ verbatim.
 
 **Step 2 — make it recursive.** Split the newest term out of both sums:
 
+<LinkedMath>
 $$
 \hat{\Phi}_t
 = \frac{W_{t-1}\hat{\Phi}_{t-1} + w_t d_t}{W_{t-1} + w_t}
@@ -365,6 +378,7 @@ $$
 + \underbrace{\frac{w_t}{W_{t-1}+w_t}}_{K_t}
 \bigl(\htmlClass{term-measurement}{d_t} - \htmlClass{term-prior}{\hat{\Phi}_{t-1}}\bigr)
 $$
+</LinkedMath>
 
 Prior, plus gain times innovation. This is line for line the scalar Kalman correction.
 
@@ -561,7 +575,9 @@ exactly the places they are guessing.
 **The distance transform** answers *how far to the boundary, from anywhere?* This is the query the
 TSDF conspicuously cannot serve: past $\tau$ its value is a constant, and a constant has no gradient.
 
-<Wavefront />
+<Deferred>
+  <Wavefront />
+</Deferred>
 
 That widget is the section in one image. Toggle it off and the rings stop at 30 cm, the arrows
 vanish, and the probe freezes: a truncated field is not a distance field with smaller numbers in it,
@@ -939,17 +955,21 @@ $\hat{z} = \sum_i T_i \alpha_i t_i + T_n\, t_{\text{far}}$.
 **Step 3 — put noise on it and it becomes a likelihood.** Assume Gaussian photometric noise on each
 pixel. Then
 
+<LinkedMath>
 $$
 -\log \htmlClass{term-measurement}{p(I_t \mid \theta, T_{cw,t})}
 \;\propto\; \bigl\lVert I_t - \hat{I}(\theta, T_{cw,t}) \bigr\rVert^2
 $$
+</LinkedMath>
 
 and the map is
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\hat{\theta}}
 = \arg\max_\theta \prod_t p(I_t \mid \theta, T_{cw,t})\; \htmlClass{term-prior}{p(\theta)}
 $$
+</LinkedMath>
 
 — MAP estimation with a rendering measurement model. Same $\eta\,p(z \mid m, x)\,p(m)$ as Chapter 13.
 The difference is entirely in *how* it is optimized: no closed-form inverse sensor model exists, so
@@ -985,7 +1005,9 @@ exponentially in $\sigma\delta$. This is why NeRF-SLAM systems that need metric 
 supervision rather than trusting rendered depth.
 </Callout>
 
-<PhotometricDescent />
+<Deferred>
+  <PhotometricDescent />
+</Deferred>
 
 The toy is 80 bins, ten rays, and plain gradient descent — no network, no rasterizer, a couple of
 hundred lines — and it reproduces the three behaviors that dominate the literature. Density sharpens

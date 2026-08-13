@@ -15,6 +15,8 @@ import { MapWeaver } from '@/components/ch/ch13/map-weaver';
 import { InverseModelWorkbench } from '@/components/ch/ch13/inverse-model-workbench';
 import { IndependenceTrap } from '@/components/ch/ch13/independence-trap';
 import { FusionFumble } from '@/components/ch/ch13/fusion-fumble';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -68,7 +70,9 @@ staircase.
 The probabilistic answer keeps the dots but stops treating them as facts. Each beam is a *piece of
 evidence* about the cells it crosses, and a map is what you get by accumulating evidence.
 
-<MapWeaver />
+<Deferred>
+  <MapWeaver />
+</Deferred>
 
 Watch a full lap before reading on. Three things are worth noticing, and each corresponds to a
 piece of mathematics below.
@@ -149,9 +153,11 @@ precisely the point being made. Beams, evidence, and inverse-model overlays stay
 
 The quantity we want is the posterior over maps given all measurements and all poses:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{p(m \mid z_{1:t},\, x_{1:t})}
 $$
+</LinkedMath>
 
 Controls $u_{1:t}$ do not appear. The path is given, so the controls carry no extra information
 about it and drop out of every expression in this chapter.
@@ -228,12 +234,14 @@ will cancel and never has to be computed.
 
 **Step 1 — split off the newest measurement with Bayes' rule.**
 
+<LinkedMath>
 $$
 p(m_i \mid z_{1:t}, x_{1:t}) = \frac{
   \htmlClass{term-measurement}{p(z_t \mid m_i, z_{1:t-1}, x_{1:t})}\;
   \htmlClass{term-prior}{p(m_i \mid z_{1:t-1}, x_{1:t})}}
   {p(z_t \mid z_{1:t-1}, x_{1:t})}
 $$
+</LinkedMath>
 
 The state is static and complete, so $z_t$ depends only on $m_i$ and the current pose:
 $p(z_t \mid m_i, z_{1:t-1}, x_{1:t}) = p(z_t \mid m_i, x_t)$. The second factor is
@@ -273,12 +281,14 @@ $$
 
 **Step 5 — take logs.** The product becomes a sum, and the third factor is exactly $-\ell_0$:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\ell_{t,i}}
 = \htmlClass{term-prior}{\ell_{t-1,i}}
 + \htmlClass{term-measurement}{\log \frac{p(m_i \mid z_t, x_t)}{1 - p(m_i \mid z_t, x_t)}}
 - \ell_0
 $$
+</LinkedMath>
 
 with boundary condition $\ell_{0,i} = \ell_0$. $\blacksquare$
 
@@ -400,7 +410,9 @@ cursor in Map Weaver are the same numbers.
 $\alpha$, $\beta$, $\ell_{occ}$, $\ell_{free}$. Four constants, no derivation, and every one of
 them changes the map. Before accepting them, look at what they actually paint.
 
-<InverseModelWorkbench />
+<Deferred>
+  <InverseModelWorkbench />
+</Deferred>
 
 The hand-crafted model is a step function in two variables: it is equally confident about a cell
 $5$ cm off the beam axis and one $\beta/2 - \epsilon$ off it, then falls off a cliff. It is equally
@@ -428,9 +440,11 @@ is $f^\star(z_t, x_t, i) = p(m_i \mid z_t, x_t)$: exactly the inverse sensor mod
 
 **Step 1 — what we cannot compute.** Bayes' rule gives the inverse model in closed form,
 
+<LinkedMath>
 $$
 p(m_i \mid z, x) = \eta \int_{m : m(i) = m_i} \htmlClass{term-measurement}{p(z \mid x, m)}\, \htmlClass{term-prior}{p(m)} \; dm
 $$
+</LinkedMath>
 
 an integral over every map whose $i$-th cell takes the given value. It is not merely hard, it is
 the same $2^{|m|}$ we ran away from at the start of the chapter.
@@ -540,7 +554,9 @@ structurally incapable of representing a correlation of any kind.
 
 Scale that from two cells to a doorway.
 
-<IndependenceTrap />
+<Deferred>
+  <IndependenceTrap />
+</Deferred>
 
 The left pane is Table 9.1 executed literally, cell by cell, with a $22°$ sonar cone. Beams that
 graze the door post report a short range, and the inverse model dutifully paints occupied evidence
@@ -556,9 +572,11 @@ have seen.
 The honest alternative gives up on representing uncertainty and asks for the single most probable
 map instead:
 
+<LinkedMath>
 $$
 m^\star = \arg\max_m\; \log \htmlClass{term-measurement}{p(z_{1:t} \mid x_{1:t}, m)} + \log \htmlClass{term-prior}{p(m)}
 $$
+</LinkedMath>
 
 Both terms decompose. The likelihood is a sum over measurements of the Chapter 10 forward model —
 no inverse model appears anywhere — and the prior, for i.i.d. cells, collapses to something with
@@ -622,7 +640,9 @@ the artifacts. The cell coupling is real; it is just not usually the biggest lie
 There is a second way to get a wrong map from correct measurements, and it does not need any
 approximation at all — only two sensors and a naive urge to add.
 
-<FusionFumble />
+<Deferred>
+  <FusionFumble />
+</Deferred>
 
 The failure has nothing to do with either sensor being wrong. The sonar rides at table height and
 correctly reports a table. The LiDAR rides at shin height, threads between four six-centimetre

@@ -15,6 +15,8 @@ import { KalmanTuningBench } from '@/components/ch/ch06/kalman-tuning-bench';
 import { GainLever } from '@/components/ch/ch06/gain-lever';
 import { MomentsVsInformation } from '@/components/ch/ch06/moments-vs-information';
 import { SmootherRewind } from '@/components/ch/ch06/smoother-rewind';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -62,7 +64,9 @@ That is the observation this chapter turns into an algorithm. If the belief is *
 be a single bump, stop storing the bump and store its mean and its width. Two numbers instead of a
 thousand, and the update becomes arithmetic.
 
-<KalmanTuningBench />
+<Deferred>
+  <KalmanTuningBench />
+</Deferred>
 
 Leave it running for a few cycles before reading on. Four things in that widget are the chapter.
 
@@ -109,7 +113,9 @@ answer is *not* to average them, and it is not to pick the more trustworthy one.
 weight at each claim whose mass is that claim's **precision** — the reciprocal of its variance —
 and take the centre of mass.
 
-<GainLever />
+<Deferred>
+  <GainLever />
+</Deferred>
 
 Two facts that widget makes physical, and that the derivations below make exact:
 
@@ -138,19 +144,23 @@ $$
 
 so that
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{p(x_t \mid u_t, x_{t-1})} =
 \Normal\!\left(x_t;\; \mat{A}_t x_{t-1} + \mat{B}_t u_t,\; \mat{R}_t\right)
 $$
+</LinkedMath>
 
 **Assumption 2 — linear measurements with additive Gaussian noise.**
 
+<LinkedMath>
 $$
 z_t = \mat{C}_t x_t + \delta_t,
 \qquad \delta_t \sim \Normal(0, \mat{Q}_t),
 \qquad
 \htmlClass{term-measurement}{p(z_t \mid x_t)} = \Normal\!\left(z_t;\; \mat{C}_t x_t,\; \mat{Q}_t\right)
 $$
+</LinkedMath>
 
 **Assumption 3 — Gaussian prior.** $\htmlClass{term-prior}{\bel(x_0)} = \Normal(x_0; \mu_0, \Sigma_0)$.
 
@@ -188,11 +198,13 @@ labelled with both the symbol and its meaning, for exactly this reason.
 <Derivation title="The prediction step, from the Bayes filter's integral" result="µ̄ = Aµ + Bu,  Σ̄ = AΣAᵀ + R">
 We want line 2 of the Bayes filter,
 
+<LinkedMath>
 $$
 \belbar(x_t) = \int
 \htmlClass{term-prediction}{p(x_t \mid u_t, x_{t-1})}\;
 \htmlClass{term-prior}{\bel(x_{t-1})}\; dx_{t-1}
 $$
+</LinkedMath>
 
 with both factors Gaussian. Write $x$ for $x_{t-1}$, drop the time subscripts on the matrices, and
 put $d = x_t - \mat{B}u$ to keep the control out of the way. The integrand is $\exp(-L)$ with
@@ -266,11 +278,13 @@ became an approximation.
 
 The result, in the colors of the widget: the blue prior becomes the orange prediction by
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\bar\mu_t} = \mat{A}_t \htmlClass{term-prior}{\mu_{t-1}} + \mat{B}_t u_t,
 \qquad
 \htmlClass{term-prediction}{\bar\Sigma_t} = \mat{A}_t \htmlClass{term-prior}{\Sigma_{t-1}} \mat{A}_t\T + \mat{R}_t
 $$
+</LinkedMath>
 
 Read the covariance line twice. $\mat{A}\Sigma\mat{A}\T$ is the old uncertainty *dragged through*
 the dynamics — for a contracting system it can shrink. The $+\mat{R}_t$ is the uncertainty this
@@ -282,11 +296,13 @@ system we will meet, prediction is a net loss.
 <Derivation title="The correction step, and where the gain comes from" result="K = Σ̄Cᵀ(CΣ̄Cᵀ + Q)⁻¹">
 Line 3 of the Bayes filter is a product of two Gaussians in $x_t$:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\bel(x_t)} = \eta\;
 \htmlClass{term-measurement}{\Normal(z_t; \mat{C}x_t, \mat{Q})}\;
 \htmlClass{term-prediction}{\Normal(x_t; \bar\mu, \bar\Sigma)}
 $$
+</LinkedMath>
 
 Write $x$ for $x_t$. The exponent is a sum of two quadratics,
 
@@ -384,18 +400,22 @@ of two symmetric positive-semidefinite terms and cannot. Exercise 6 makes this h
 
 Collecting the results, with the colors of the widget:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{S_t} = \mat{C}_t\htmlClass{term-prediction}{\bar\Sigma_t}\mat{C}_t\T + \mat{Q}_t,
 \qquad
 \mat{K}_t = \htmlClass{term-prediction}{\bar\Sigma_t}\mat{C}_t\T \htmlClass{term-measurement}{S_t^{-1}}
 $$
+</LinkedMath>
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\mu_t} = \htmlClass{term-prediction}{\bar\mu_t}
  + \mat{K}_t\bigl(\htmlClass{term-measurement}{z_t} - \mat{C}_t\htmlClass{term-prediction}{\bar\mu_t}\bigr),
 \qquad
 \htmlClass{term-posterior}{\Sigma_t} = (\mat{I} - \mat{K}_t\mat{C}_t)\htmlClass{term-prediction}{\bar\Sigma_t}
 $$
+</LinkedMath>
 
 The quantity $z_t - \mat{C}_t\bar\mu_t$ is the **innovation**: the part of the measurement the
 filter did not already know. $S_t$ is how surprised the filter is *entitled* to be. Both names earn
@@ -406,6 +426,7 @@ and the consistency section below uses it to catch a filter lying about its own 
 
 Specialize to one dimension with $\mat{C} = 1$. Then $S = \bar\sigma^2 + \sigma_z^2$ and
 
+<LinkedMath>
 $$
 K = \frac{\bar\sigma^2}{\bar\sigma^2 + \sigma_z^2},
 \qquad
@@ -413,14 +434,17 @@ K = \frac{\bar\sigma^2}{\bar\sigma^2 + \sigma_z^2},
 \qquad
 \htmlClass{term-posterior}{\sigma^2} = (1-K)\,\htmlClass{term-prediction}{\bar\sigma^2}
 $$
+</LinkedMath>
 
 Substituting $K$ into the variance and inverting turns that last equation into the sentence the
 Gain Lever draws:
 
+<LinkedMath>
 $$
 \frac{1}{\htmlClass{term-posterior}{\sigma^2}}
 = \frac{1}{\htmlClass{term-prediction}{\bar\sigma^2}} + \frac{1}{\htmlClass{term-measurement}{\sigma_z^2}}
 $$
+</LinkedMath>
 
 **Precisions add.** Not variances, not standard deviations — precisions. The posterior is more
 certain than either input, always, by an amount that does not depend on whether the two sources
@@ -510,11 +534,13 @@ $$
 
 the entire measurement update is
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\Omega_t} = \htmlClass{term-prediction}{\bar\Omega_t} + \mat{C}_t\T\mat{Q}_t^{-1}\mat{C}_t,
 \qquad
 \htmlClass{term-posterior}{\xi_t} = \htmlClass{term-prediction}{\bar\xi_t} + \mat{C}_t\T\mat{Q}_t^{-1}\htmlClass{term-measurement}{z_t}
 $$
+</LinkedMath>
 
 No gain. No innovation covariance. No inversion of anything the size of the state. Two additions.
 
@@ -545,7 +571,9 @@ $$
 5. return $\xi_t, \Omega_t$
 </Algorithm>
 
-<MomentsVsInformation />
+<Deferred>
+  <MomentsVsInformation />
+</Deferred>
 
 | Operation | Moments $(\mu, \Sigma)$ | Information $(\xi, \Omega)$ |
 |---|---|---|
@@ -580,20 +608,24 @@ because they fall outside its gate.
 Two statistics answer it. Under a correct linear-Gaussian model, the normalized estimation error
 squared
 
+<LinkedMath>
 $$
 \epsilon_t = (\htmlClass{term-truth}{x_t} - \htmlClass{term-posterior}{\mu_t})\T\,
 \htmlClass{term-posterior}{\Sigma_t^{-1}}\,
 (\htmlClass{term-truth}{x_t} - \htmlClass{term-posterior}{\mu_t})
 $$
+</LinkedMath>
 
 is $\chi^2$ distributed with $n$ degrees of freedom, so $\E[\epsilon_t] = n$. And the normalized
 innovation squared
 
+<LinkedMath>
 $$
 \nu_t = (\htmlClass{term-measurement}{z_t} - \mat{C}_t\htmlClass{term-prediction}{\bar\mu_t})\T\,
 S_t^{-1}\,
 (\htmlClass{term-measurement}{z_t} - \mat{C}_t\htmlClass{term-prediction}{\bar\mu_t})
 $$
+</LinkedMath>
 
 is $\chi^2$ with $m$ degrees of freedom, so $\E[\nu_t] = m$.
 
@@ -1075,7 +1107,9 @@ semidefinite: **smoothing never increases a covariance.** The improvement is lar
 $\bar\Sigma_{t+1}$ was largest, which is to say exactly where the filter was least sure.
 </Derivation>
 
-<SmootherRewind />
+<Deferred>
+  <SmootherRewind />
+</Deferred>
 
 That widget is this book's longest-range foreshadowing. The smoothed trajectory is the posterior
 over *all* states given *all* measurements, $p(x_{0:T} \mid z_{1:T}, u_{1:T})$ — and computing it

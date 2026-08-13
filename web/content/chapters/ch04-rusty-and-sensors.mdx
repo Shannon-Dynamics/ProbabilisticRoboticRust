@@ -15,6 +15,8 @@ import { RustysDashboard } from '@/components/ch/ch04/rustys-dashboard';
 import { LidarAnatomy } from '@/components/ch/ch04/lidar-anatomy';
 import { SeedLab } from '@/components/ch/ch04/seed-lab';
 import { WidgetAnatomy } from '@/components/ch/ch04/widget-anatomy';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -61,7 +63,9 @@ turns out to be 0.3 mm larger than the CAD model says, the number the encoder re
 distance the robot travelled part company — and because dead reckoning integrates, that
 disagreement is never corrected, only accumulated.
 
-<RustysDashboard />
+<Deferred>
+  <RustysDashboard />
+</Deferred>
 
 Watch it for thirty seconds before reading on. Three things are worth noticing.
 
@@ -197,11 +201,13 @@ $\dot\theta = \omega$ numerically — Euler, or Runge–Kutta if you are feeling
 mistake, and an instructive one: the problem has a closed-form solution that is *shorter* than the
 approximation, and [Chapter 3](/chapters/ch03-geometry-of-motion) already handed it to us.
 
+<LinkedMath>
 $$
 \htmlClass{term-truth}{x_{t+1}} \;=\; \htmlClass{term-truth}{x_t} \bplus
 \bigl(v\,\Delta t,\; 0,\; \omega\,\Delta t\bigr)\T
 \;=\; x_t \circ \exp\Bigl[\bigl(v\,\Delta t,\; 0,\; \omega\,\Delta t\bigr)\T\Bigr]
 $$
+</LinkedMath>
 
 No small-angle approximation, no integration error, no step-size parameter. The middle zero is the
 nonholonomic constraint, expressed in the Lie algebra $\mathfrak{se}(2)$.
@@ -278,6 +284,7 @@ Now the sensing side. An encoder does not report an angle; it reports an integer
 each wheel accumulates $\Delta\text{ticks}_i$ counts, and each count corresponds to
 $\lambda = 2\pi r/N$ metres of wheel travel.
 
+<LinkedMath>
 $$
 \Delta s_i = \lambda\,\Delta\text{ticks}_i,
 \qquad
@@ -285,13 +292,16 @@ $$
 \qquad
 \htmlClass{term-prediction}{\Delta\theta} = \frac{\Delta s_R - \Delta s_L}{\ell},
 $$
+</LinkedMath>
 
 and the dead-reckoned pose advances by
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\hat{x}_{t+1}} = \htmlClass{term-prediction}{\hat{x}_t} \bplus
 \bigl(\Delta s,\; 0,\; \Delta\theta\bigr)\T .
 $$
+</LinkedMath>
 
 That is the same $\bplus$, with the same $\exp$, as the ground-truth integrator. **This is the key
 structural fact of the chapter:** dead reckoning and the simulator's physics run *identical
@@ -404,25 +414,33 @@ Rusty's LiDAR is a spinning planar time-of-flight sensor: $n$ beams over a $2\pi
 $z_{\max} = 8$ m. For beam $k$ at body-frame bearing $\varphi_k$, the simulator computes the true
 first-hit distance by ray casting against the map,
 
+<LinkedMath>
 $$
 \htmlClass{term-truth}{z^{k*}} = \operatorname{raycast}\!\left(m,\ x_t \circ T_{\text{lidar}},\ \varphi_k\right),
 $$
+</LinkedMath>
 
 and then corrupts it in one of exactly two ways. With probability $p_{\mathrm{drop}}$ the beam
 returns nothing at all and the sensor reports its ceiling,
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{z_t^k} = z_{\max},
 $$
+</LinkedMath>
 
 and otherwise it reports the true range plus Gaussian noise, clipped to the sensor's range:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{z_t^k} = \min\!\left(\htmlClass{term-truth}{z^{k*}} + \varepsilon,\ z_{\max}\right),
 \qquad \varepsilon \sim \Normal(0, \sigma_r^2).
 $$
+</LinkedMath>
 
-<LidarAnatomy />
+<Deferred>
+  <LidarAnatomy />
+</Deferred>
 
 Three observations, each of which becomes a chapter later on.
 
@@ -839,7 +857,9 @@ Every claim above is a claim about a distribution, and a distribution is not som
 in one run. So do what an experimentalist would: run the same command script many times and look at
 the spread.
 
-<SeedLab />
+<Deferred>
+  <SeedLab />
+</Deferred>
 
 This widget is the reason every benchmark in this book reports over many seeds. Three things it
 makes visible that no single trajectory can:
@@ -869,7 +889,9 @@ whole ensemble leaves together. That is bias, and no number of seeds will averag
 One last piece of infrastructure, and it is the one you will use most: the contract every figure in
 this book obeys.
 
-<WidgetAnatomy />
+<Deferred>
+  <WidgetAnatomy />
+</Deferred>
 
 Two clauses deserve their own paragraph.
 

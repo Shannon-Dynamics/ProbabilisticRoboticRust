@@ -15,6 +15,8 @@ import { GrandDemo } from '@/components/ch/ch26/grand-demo';
 import { StackAnatomy } from '@/components/ch/ch26/stack-anatomy';
 import { FailureTheater } from '@/components/ch/ch26/failure-theater';
 import { RetrospectiveScorecard } from '@/components/ch/ch26/retrospective-scorecard';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -53,7 +55,9 @@ Recovery in a well-built system is never luck.
 
 ## Ninety seconds
 
-<GrandDemo />
+<Deferred>
+  <GrandDemo />
+</Deferred>
 
 It is running the real thing. There is no recorded trace, no scripted trajectory, no
 hidden ground truth feeding the estimator: what you are watching is a scan matcher
@@ -128,7 +132,9 @@ made. This chapter is about doing that on purpose, with the approximations writt
 
 ## The stack, as measured dataflow
 
-<StackAnatomy />
+<Deferred>
+  <StackAnatomy />
+</Deferred>
 
 Eight tasks. Each publishes a typed message at its own rate and consumes the messages of
 its neighbors, and nothing else — no task reaches into another's internals. On native
@@ -240,11 +246,13 @@ paid whenever the optimism is wrong, and it is paid as a replan.
 **Step 4 — certainty equivalence in the pose.** MPPI rolls out from $\mu_t$, dropping
 $\Sigma_t$ entirely:
 
+<LinkedMath>
 $$
 u_t \;=\; \texttt{mppi}\big(\htmlClass{term-posterior}{\mu_t},\; \text{path},\; d_{\text{esdf}}\big)
 \quad\text{instead of}\quad
 \arg\min_u \E_{x \sim \htmlClass{term-posterior}{\Normal(\mu_t, \Sigma_t)}}\big[J(x, u)\big]
 $$
+</LinkedMath>
 
 This is the substitution F2 repairs. Dropping $\Sigma_t$ is exactly right when $\Sigma_t$
 is small and exactly catastrophic when it is not, so instead of restoring the expectation
@@ -264,11 +272,13 @@ in the map, $r_{\text{robot}}$ the robot radius, and $\sigma_{\text{pose}}^2$ th
 eigenvalue of the position block of $\Sigma_t$. If every point of the planned trajectory
 satisfies
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{d_{\text{esdf}}(\mu)} \;\ge\; r_{\text{robot}} + \htmlClass{term-posterior}{k_\sigma\, \sigma_{\text{pose}}},
 \qquad
 k_\sigma = \Phi^{-1}(1-\delta)
 $$
+</LinkedMath>
 
 then each point of the *true* trajectory collides with probability at most $\delta$.
 
@@ -402,6 +412,7 @@ tracks the average particle weight at two timescales and compares them. Transpla
 same detector onto scan-match fitness $f_t$ — the fraction of beam endpoints landing
 within 25 cm of something the map already knows about:
 
+<LinkedMath>
 $$
 w_{\text{fast}} \leftarrow w_{\text{fast}} + \alpha_{\text{fast}}(f_t - w_{\text{fast}}),
 \qquad
@@ -409,6 +420,7 @@ w_{\text{slow}} \leftarrow w_{\text{slow}} + \alpha_{\text{slow}}(f_t - w_{\text
 \qquad
 \htmlClass{term-posterior}{\rho_t} = \frac{w_{\text{fast}}}{w_{\text{slow}}}
 $$
+</LinkedMath>
 
 with $\alpha_{\text{fast}} = 0.5 \gg \alpha_{\text{slow}} = 0.05$. The justification
 transfers verbatim: $\rho$ is a *ratio*, so it is invariant to the absolute scale of the
@@ -872,7 +884,9 @@ the prose and the code ever disagree, the test settles it.
 Three sabotages, one per row of F1's table, each with the statistic that is supposed to
 notice.
 
-<FailureTheater />
+<Deferred>
+  <FailureTheater />
+</Deferred>
 
 **Kidnap** attacks the assumption that the belief brackets the truth. Watch $\rho$: it is
 flat and near 1 for the whole warm-up, dives within two scans of the teleport, and the
@@ -934,7 +948,9 @@ bottom of the stack; it is what makes every detector above it meaningful.
 
 ## What Rust cost, and what it bought
 
-<RetrospectiveScorecard />
+<Deferred>
+  <RetrospectiveScorecard />
+</Deferred>
 
 Three honesty items that the panels above cannot express on their own.
 

@@ -15,6 +15,8 @@ import { BananaMachine } from '@/components/ch/ch09/banana-machine';
 import { ArcAnatomy } from '@/components/ch/ch09/arc-anatomy';
 import { OdometryDecomposer } from '@/components/ch/ch09/odometry-decomposer';
 import { MapSqueeze } from '@/components/ch/ch09/map-squeeze';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -57,7 +59,9 @@ Rusty is standing still. We send exactly one instruction: *drive at 1 m/s while 
 
 Now send the same instruction a thousand times, from the same starting pose, on the same floor.
 
-<BananaMachine />
+<Deferred>
+  <BananaMachine />
+</Deferred>
 
 Three things in that cloud are worth naming before we do any algebra, because each one becomes a
 piece of the mathematics below.
@@ -148,9 +152,11 @@ robot can physically reach, and it bends — because the kinematics bend.
 
 The **motion model**, also called the probabilistic kinematic model, is the conditional density
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{p(x_t \mid u_t,\, x_{t-1})}
 $$
+</LinkedMath>
 
 over poses $x_t = (x\ \ y\ \ \theta)\T \in \SEtwo$. It is the integrand of the Bayes-filter
 prediction step, and that is its entire job: given a distribution over where the robot was, produce
@@ -167,6 +173,7 @@ Markov failure [Chapter 5](/chapters/ch05-bayes-filter) warned about.
 Noise enters through the commanded velocities. Thrun's model perturbs both, and then adds a third
 term that will need explaining:
 
+<LinkedMath>
 $$
 \hat{v} = \htmlClass{term-prior}{v} + \htmlClass{term-prediction}{\varepsilon_{\alpha_1 v^2 + \alpha_2 \omega^2}}
 \qquad
@@ -174,6 +181,7 @@ $$
 \qquad
 \hat{\gamma} = \phantom{\omega +{}} \htmlClass{term-prediction}{\varepsilon_{\alpha_5 v^2 + \alpha_6 \omega^2}}
 $$
+</LinkedMath>
 
 Read the subscripts as a design statement. Every variance is a weighted sum of $v^2$ and
 $\omega^2$: **noise is proportional to motion**. A stationary robot has no motion noise at all,
@@ -213,17 +221,23 @@ $(x,\ y + r)$, directly to its left. Good.
 \hat{\omega}\Delta t$ radians around that point. Rotating the position by $\Delta\theta$ about the
 ICC and adding $\Delta\theta$ to the heading gives
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{x'} = x - \frac{\hat{v}}{\hat{\omega}}\sin\theta + \frac{\hat{v}}{\hat{\omega}}\sin(\theta + \hat{\omega}\Delta t)
 $$
+</LinkedMath>
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{y'} = y + \frac{\hat{v}}{\hat{\omega}}\cos\theta - \frac{\hat{v}}{\hat{\omega}}\cos(\theta + \hat{\omega}\Delta t)
 $$
+</LinkedMath>
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\theta'} = \theta + \hat{\omega}\Delta t + \hat{\gamma}\Delta t
 $$
+</LinkedMath>
 
 **Step 4 — the straight-line limit.** As $\hat{\omega} \to 0$ the radius diverges and both position
 terms are $\infty \cdot 0$. Expand: $\sin(\theta + \hat\omega\Delta t) - \sin\theta =
@@ -291,7 +305,9 @@ The trick is that the map from noise to pose is invertible. There is exactly one
 leaves $x_{t-1}$ tangentially and passes through the position of $x_t$; find it, read off the
 $(\hat{v}, \hat{\omega})$ it implies, and evaluate the noise densities there.
 
-<ArcAnatomy />
+<Deferred>
+  <ArcAnatomy />
+</Deferred>
 
 <Derivation title="Recovering (v̂, ω̂, γ̂) from a pose pair" result="μ = ½ · [(x−x′)cos θ + (y−y′)sin θ] / [(y−y′)cos θ − (x−x′)sin θ]">
 **Step 1 — two constraints on the centre.** The arc passes through $(x, y)$ and $(x', y')$, so its
@@ -376,6 +392,7 @@ from $\bar{x}_{t-1} = (\bar{x}\ \ \bar{y}\ \ \bar{\theta})\T$ to
 $\bar{x}_t = (\bar{x}'\ \ \bar{y}'\ \ \bar{\theta}')\T$. Any such change decomposes uniquely into
 *rotate, drive, rotate*:
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\delta_{rot1}} = \operatorname{atan2}(\bar{y}' - \bar{y},\ \bar{x}' - \bar{x}) - \bar{\theta},
 \qquad
@@ -383,6 +400,7 @@ $$
 \qquad
 \htmlClass{term-prediction}{\delta_{rot2}} = \bar{\theta}' - \bar{\theta} - \delta_{rot1}
 $$
+</LinkedMath>
 
 Three numbers reach any pose change from any starting pose, so nothing is lost — except when
 $\delta_{trans} = 0$, where $\delta_{rot1}$ is the `atan2` of nothing and the split between the two
@@ -412,7 +430,9 @@ mostly because the fiction is *conservative*: independent noises produce a wider
 correlated ones of the same marginal size, and a filter that is slightly too uncertain survives
 where an overconfident one dies.
 
-<OdometryDecomposer />
+<Deferred>
+  <OdometryDecomposer />
+</Deferred>
 
 <Algorithm
   name="sample_motion_model_odometry(u_t, x_{t-1})"
@@ -445,10 +465,12 @@ The models so far know nothing about walls. Given enough noise, `sample_motion_m
 cheerfully place Rusty inside a load-bearing column. If a map $m$ is available, conditioning on it
 is a free improvement:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{p(x_t \mid u_t, x_{t-1}, m)}
 = \eta\;\htmlClass{term-measurement}{p(x_t \mid m)}\;\htmlClass{term-prediction}{p(x_t \mid u_t, x_{t-1})}
 $$
+</LinkedMath>
 
 with $p(x_t \mid m)$ taken to be uniform over free space and zero inside obstacles. Sampling is
 rejection sampling: draw from the map-free model, keep the draw if it landed somewhere legal,
@@ -472,7 +494,9 @@ The approximation is hiding in line 3, and it is worth being blunt about it. $p(
 function of a *pose*. It can only ask whether the robot's final resting place is legal. It cannot
 ask whether the robot got there legally, because the path is not one of its arguments.
 
-<MapSqueeze />
+<Deferred>
+  <MapSqueeze />
+</Deferred>
 
 Point Rusty at a wall he cannot pass and four out of five accepted samples will be on the far side
 of it. That is not an implementation bug; it is the exact content of the factorization above. The
@@ -505,9 +529,11 @@ $$
 which is the arc update of the derivation above, written in the body frame. Not an approximation of
 it — the same three numbers. So
 
+<LinkedMath>
 $$
 \htmlClass{term-truth}{x_t = x_{t-1} \bplus \tau_t}
 $$
+</LinkedMath>
 
 is the exact noise-free kinematics, and the $\omega \to 0$ branch that cost us a page is already
 inside $\exp$'s Taylor series, where it belongs.
@@ -515,6 +541,7 @@ inside $\exp$'s Taylor series, where it belongs.
 Now put the noise back. The velocity model perturbs $v$ and $\omega$ *additively*, and $\tau_t$
 depends on them *linearly*. Therefore the sampled twist is
 
+<LinkedMath>
 $$
 \hat\tau_t = \tau_t + \mathbf{w},
 \qquad
@@ -522,12 +549,15 @@ $$
 \qquad
 R_u = \Delta t^2 \diag\!\big(\alpha_1 v^2 + \alpha_2\omega^2,\;\; 0,\;\; \alpha_3 v^2 + \alpha_4\omega^2\big)
 $$
+</LinkedMath>
 
 and the whole model collapses to one line:
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{x_t = x_{t-1} \bplus (\tau_t + \mathbf{w})}
 $$
+</LinkedMath>
 
 <Derivation title="Why the banana is exactly Gaussian in exponential coordinates" result="ξ = x_t ⊟ x_{t-1} ~ N(τ_t, R_u), exactly, when α₅ = α₆ = 0">
 **Step 1 — anchor a chart at the start pose.** Define the coordinates

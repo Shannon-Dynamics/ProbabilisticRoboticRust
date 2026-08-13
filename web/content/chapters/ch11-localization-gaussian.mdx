@@ -15,6 +15,8 @@ import { EkfLocalizationLab } from '@/components/ch/ch11/ekf-localization-lab';
 import { TaxonomyGrid } from '@/components/ch/ch11/taxonomy-grid';
 import { AssociationGate } from '@/components/ch/ch11/association-gate';
 import { HypothesisForest } from '@/components/ch/ch11/hypothesis-forest';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -61,7 +63,9 @@ landmarks, and the purple ellipse is the posterior it reports.
 
 Watch it for one lap before touching anything. Then do exactly one thing: press **close pair**.
 
-<EkfLocalizationLab />
+<Deferred>
+  <EkfLocalizationLab />
+</Deferred>
 
 Under the `dense` preset the filter is *good*. Position RMSE over four hundred steps is 0.094 m,
 the ellipse swells while the robot crosses a landmark-free stretch — which is 42% of them — and
@@ -102,7 +106,9 @@ Before deriving anything, it is worth being precise about what "localization" me
 names at least six different problems of wildly different difficulty. Thrun's taxonomy splits them
 along three axes, and a Gaussian filter is honestly applicable to exactly one cell.
 
-<TaxonomyGrid />
+<Deferred>
+  <TaxonomyGrid />
+</Deferred>
 
 The three axes are worth stating in the book's own words.
 
@@ -132,16 +138,20 @@ of the top row.
 The formal umbrella over all six cells is one line of [Chapter 5](/chapters/ch05-bayes-filter)
 with a map $m$ added to every conditional:
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\belbar(x_t)} = \int \htmlClass{term-prediction}{p(x_t \mid u_t, x_{t-1}, m)}\;
 \htmlClass{term-prior}{\bel(x_{t-1})}\, dx_{t-1}
 $$
+</LinkedMath>
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\bel(x_t)} = \eta\;
 \htmlClass{term-measurement}{p(z_t \mid x_t, m)}\;
 \htmlClass{term-prediction}{\belbar(x_t)}
 $$
+</LinkedMath>
 
 <Algorithm
   name="Markov_localization(bel(x_{t-1}), u_t, z_t, m)"
@@ -197,6 +207,7 @@ The state is a pose $x_t = (x, y, \theta)\T$, and the control is a commanded tra
 rotational velocity $u_t = (v_t, \omega_t)\T$ held for $\Delta t$. Chapter 9 integrated that
 exactly, as an arc of radius $v/\omega$:
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\bar\mu_t} = g(u_t, \htmlClass{term-prior}{\mu_{t-1}}) =
 \htmlClass{term-prior}{\mu_{t-1}} +
@@ -206,16 +217,19 @@ $$
 \omega_t \Delta t
 \end{pmatrix}
 $$
+</LinkedMath>
 
 The covariance needs two Jacobians, because the uncertainty has two sources: the uncertainty
 already in the pose, and the uncertainty in what the wheels actually did.
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\bar\Sigma_t} =
 G_t\, \htmlClass{term-prior}{\Sigma_{t-1}}\, G_t\T \;+\; V_t M_t V_t\T,
 \qquad
 M_t = \begin{pmatrix} \alpha_1 v_t^2 + \alpha_2 \omega_t^2 & 0\\ 0 & \alpha_3 v_t^2 + \alpha_4 \omega_t^2\end{pmatrix}
 $$
+</LinkedMath>
 
 The term $V_t M_t V_t\T$ deserves a sentence, because it is where the 2005 presentation improves on
 the earlier draft (which simply wrote an additive 3×3 $R_t$). Motion noise does not live in pose
@@ -235,12 +249,14 @@ correspondence $c_t^i = j$, the predicted measurement of map landmark $m_j = (m_
 from the predicted pose is pure trigonometry. Write $\delta = m_j - \bar\mu_{t,xy}$ and
 $q = \delta\T\delta$:
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\hat z_t^j} =
 \begin{pmatrix} \sqrt{q} \\ \operatorname{atan2}(\delta_y, \delta_x) - \bar\mu_{t,\theta} \\ m_{j,s}\end{pmatrix},
 \qquad
 H_t^j = \frac{1}{q}\begin{pmatrix} -\sqrt{q}\,\delta_x & -\sqrt{q}\,\delta_y & 0 \\ \delta_y & -\delta_x & -q \\ 0 & 0 & 0\end{pmatrix}
 $$
+</LinkedMath>
 
 Read the two useful rows of $H_t^j$ before moving on; they explain most of what the widgets show.
 
@@ -428,6 +444,7 @@ $$
 
 comfortably inside any sane gate. The correction is $K_t \nu = (-0.1724,\ -0.1034,\ -0.01241)$:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\mu_t} = (1.8276,\ 2.8966,\ -0.01241),
 \qquad
@@ -437,6 +454,7 @@ $$
 0 & -0.02069 & 0.007517
 \end{pmatrix}
 $$
+</LinkedMath>
 
 Every number in that posterior tells you something.
 
@@ -455,10 +473,12 @@ The algorithm above took $c_t$ as an input. Nothing supplies it.
 The maximum-likelihood answer is to pick, for each observed feature, the landmark that makes the
 reading least surprising:
 
+<LinkedMath>
 $$
 \hat c_t^i \;=\; \arg\max_j\ \Normal\!\left(\htmlClass{term-measurement}{z_t^i};\ \htmlClass{term-prediction}{\hat z_t^j},\ S_t^j\right)
 \;=\; \arg\min_j\ \Big[\underbrace{d_M^2(z_t^i, \hat z_t^j)}_{\text{fit}} + \underbrace{\ln\det S_t^j}_{\text{tie-break}}\Big]
 $$
+</LinkedMath>
 
 and then to accept it only if it survives a gate:
 
@@ -472,7 +492,9 @@ The set $\{z : d_M^2(z, \hat z^j) \le \gamma\}$ is the **validation region** —
 measurement space, drawn in orange in the widget below. It is the geometric object the whole
 section is about.
 
-<AssociationGate />
+<Deferred>
+  <AssociationGate />
+</Deferred>
 
 Spend a minute dragging the green dot before reading on, because the widget makes three points
 that are hard to make in prose.
@@ -662,10 +684,12 @@ because keeping uncertainty small requires seeing landmarks often.
 If the filter cannot decide safely, it can decline to decide. Represent the belief as a Gaussian
 mixture over association histories:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\bel(x_t)} = \frac{1}{\sum_h w_t^{(h)}} \sum_h w_t^{(h)}\,
 \Normal\!\left(x_t;\ \mu_t^{(h)},\ \Sigma_t^{(h)}\right)
 $$
+</LinkedMath>
 
 Each component is a full EKF localizer conditioned on one history of choices. When a feature has
 several landmarks inside its gate, the component **branches**, once per candidate, and each child
@@ -697,7 +721,9 @@ Line 7 matters more than it looks. A hypothesis that can explain *nothing* must 
 lives forever at its old weight and the mixture never collapses. Charging it a clutter density is
 the standard device, and it is what turns "no landmark fits" from silence into evidence.
 
-<HypothesisForest />
+<Deferred>
+  <HypothesisForest />
+</Deferred>
 
 <Derivation title="Weight recursion, exponential growth, and what pruning costs" result="\text{pruned mass} \le \rho H_{\max} \text{ per step}">
 
@@ -1228,12 +1254,14 @@ they were the right ones.
 
 **NEES** is the instrument that works, and it is the modernization this chapter insists on:
 
+<LinkedMath>
 $$
 \varepsilon_t = \left(\htmlClass{term-truth}{x_t} \bminus \htmlClass{term-posterior}{\mu_t}\right)\T
 \htmlClass{term-posterior}{\Sigma_t^{-1}}
 \left(\htmlClass{term-truth}{x_t} \bminus \htmlClass{term-posterior}{\mu_t}\right)
 \;\sim\; \chi^2_3 \quad\text{if the filter is consistent}
 $$
+</LinkedMath>
 
 It compares the error the filter *makes* to the error it *claims*, so it catches exactly the
 failure mode that RMSE and covariance both miss. Under a consistent 3-DOF filter each $\varepsilon_t$

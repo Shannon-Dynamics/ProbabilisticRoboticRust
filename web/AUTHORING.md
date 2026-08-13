@@ -152,6 +152,90 @@ Widget rules, in priority order:
 5. **Name the misconception it kills** in `teaches`.
 6. IDs come from the chapter design doc (`w5.1`, `w5.2`, …) and must match the design's manifest.
 
+## Explorable prose
+
+Two devices let the prose itself become interactive. Both degrade correctly in the print edition,
+so use them freely.
+
+### `<Scrub>` — a number the reader can drag
+
+```mdx
+import { Scrub } from '@/components/book/scrub';
+
+The wheels deliver the commanded step plus an error of about
+<Scrub id="ch09.alpha1" value={0.12} min={0.01} max={0.5} step={0.01}
+       unit="m" role="prediction" label="motion noise sigma" /> — drag it up
+and watch every peak in the belief widen.
+```
+
+The `id` is a namespaced key (`chNN.name`). A widget reads the same key:
+
+```tsx
+import { useExplorable, setValue } from '@/lib/explorable/store';
+
+const sigma = useExplorable('ch09.alpha1', params.sigma);   // falls back to its own slider
+```
+
+Rules:
+
+- **The sentence must still read if nobody drags anything.** The printed value is the value the
+  text claims; scrubbing is an invitation to ask "what if", not a blank to fill in.
+- Give it a `role` when the quantity belongs to one of the five estimation colours, so the number
+  matches the curve it controls.
+- If a widget also exposes the value as a slider, have the slider call `setValue` with the same
+  key — then the sentence and the panel are two views of one parameter, not two parameters.
+
+### `<LinkedMath>` — point at a term, light up the figure
+
+Wrap any display equation whose terms are colour-coded:
+
+```mdx
+<LinkedMath>
+$$
+\htmlClass{term-posterior}{\bel(x_t)} = \eta\,
+\htmlClass{term-measurement}{p(z_t \mid x_t)}\,
+\htmlClass{term-prediction}{\belbar(x_t)}
+$$
+</LinkedMath>
+```
+
+Hovering (or tabbing to) a tinted term mutes every other estimation colour in every figure on the
+page. **No widget code is required**: `SimCanvas` fades the non-hovered roles in the palette it
+hands to `draw`, so any widget that draws its prior in `p.prior` and its measurement in
+`p.measurement` — which is all of them — already participates.
+
+Use `<RoleTag role="measurement">the measurement</RoleTag>` to get the same link from a sentence.
+
+## Active exercises
+
+Three components turn the exercises from prose into something the reader does. Outcomes persist in
+`localStorage`, per exercise id.
+
+```mdx
+<Exercise level="C" difficulty={1} title="Predict, then check">
+  <Predict
+    id="ch05.e4"
+    question="Set motion noise to maximum and sensing off. After twenty steps, what does the belief look like?"
+    options={[
+      { label: 'A single peak that has drifted', because: 'Prediction is unbiased — it loses certainty, not accuracy.' },
+      { label: 'Flat, over the whole corridor', correct: true, because: 'Repeated convolution drives any belief on a loop toward uniform.' },
+      { label: 'Three peaks, one per door', because: 'Doors enter only through the measurement model.' },
+    ]}
+  >
+  Follow-up shown once they commit.
+  </Predict>
+</Exercise>
+```
+
+- **`<Predict>`** — the reader must commit before the explanation appears. Every option gets a
+  `because`, including the wrong ones: a wrong answer is only useful if it explains itself. Use
+  this for every exercise whose text says "predict, then verify".
+- **`<CheckAnswer id prompt answer tolerance unit>`** — a numeric box with an explicit tolerance.
+  Set the tolerance to what a reader doing the algebra by hand would plausibly write; marking
+  0.464 wrong because the answer is 0.4637 teaches arithmetic pedantry, not estimation.
+- **`<Hints>`** — children are revealed one at a time. Write them as a staircase: the first names
+  the relevant idea, the last is nearly the answer.
+
 ## Dashboards
 
 For chapters where the point is *monitoring* an algorithm rather than watching a scene, use the

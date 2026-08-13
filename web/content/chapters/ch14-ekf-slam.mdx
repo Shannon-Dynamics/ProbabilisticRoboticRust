@@ -16,6 +16,8 @@ import { ConsistencyAutopsy } from '@/components/ch/ch14/consistency-autopsy';
 import { GrowthMeter } from '@/components/ch/ch14/growth-meter';
 import { PoisonedWeb } from '@/components/ch/ch14/poisoned-web';
 import { TeX } from '@/components/ch/ch14/tex';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -69,7 +71,9 @@ mapping needs the poses. The 1999 draft of *Probabilistic Robotics* calls it, me
 "chicken-and-egg problem", and the resolution is the one probability theory always offers when two
 unknowns are entangled: stop estimating them separately. Estimate the joint distribution.
 
-<CorrelationWeb />
+<Deferred>
+  <CorrelationWeb />
+</Deferred>
 
 Watch a full lap before reading on. Three things happen, and each one is a section of this chapter.
 
@@ -137,9 +141,11 @@ Two mechanisms cause that collapse, and both are worth naming before the algebra
 
 The **online SLAM problem** asks for the posterior over the *current* pose and the map:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{p(x_t,\, m \mid z_{1:t},\, u_{1:t})}
 $$
+</LinkedMath>
 
 The **full SLAM problem** asks for the posterior over the *entire trajectory* and the map:
 
@@ -204,6 +210,7 @@ Driving changes the pose and leaves every landmark exactly where it was. Writing
 projection matrix $F_x = (\,I_3 \;\; 0_{3\times 2N}\,)$ keeps the equations the size of the state
 while the *work* stays the size of the pose:
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\bar\mu_t} = \mu_{t-1} + F_x\T\, \delta(u_t, \mu_{t-1}),
 \qquad
@@ -211,6 +218,7 @@ G_t = I + F_x\T g_t F_x,
 \qquad
 \htmlClass{term-prediction}{\bar\Sigma_t} = G_t \Sigma_{t-1} G_t\T + F_x\T R_t F_x
 $$
+</LinkedMath>
 
 Here $\delta$ is the exact arc of the velocity model from
 [Chapter 9](/chapters/ch09-motion-models), and $g_t$ is its $3\times3$ Jacobian, whose only
@@ -291,11 +299,13 @@ G_z = \begin{pmatrix} \cos\alpha & -r\sin\alpha \\ \sin\alpha & \phantom{-}r\cos
 
 **Step 3 — propagate.** The new diagonal block and the new cross-blocks are
 
+<LinkedMath>
 $$
 \Sigma_{jj} = \htmlClass{term-prediction}{G_x \Sigma_{xx} G_x\T} + \htmlClass{term-measurement}{G_z Q_t G_z\T},
 \qquad
 \Sigma_{j\bullet} = G_x\, \Sigma_{x\bullet}
 $$
+</LinkedMath>
 
 where $\Sigma_{x\bullet}$ is the pose's row of $\Sigma$ against *everything already in the state*.
 Read the second equation carefully: a newborn landmark is correlated with every existing landmark,
@@ -367,11 +377,13 @@ Five non-zero columns out of $3 + 2N$. The measurement is as local as a measurem
 **Step 1 — the standard EKF update, lifted.** Nothing changes from
 [Chapter 7](/chapters/ch07-ekf-ukf-manifolds) except the dimension:
 
+<LinkedMath>
 $$
 S_t = H_t \bar\Sigma_t H_t\T + Q_t, \qquad
 K_t = \bar\Sigma_t H_t\T S_t^{-1}, \qquad
 \mu_t = \bar\mu_t + K_t\big(\htmlClass{term-measurement}{z_t} - \hat z_t\big)
 $$
+</LinkedMath>
 
 **Step 2 — look at what $\bar\Sigma_t H_t\T$ is.** $H_t\T$ has five non-zero *rows*, so
 $\bar\Sigma_t H_t\T$ is a linear combination of five *columns* of $\bar\Sigma_t$ — the three pose
@@ -580,7 +592,9 @@ Unknown correspondence replaces line 6 with a search:
 14. return $\mu_t$, $\Sigma_t$, $N_t$
 </Algorithm>
 
-<PoisonedWeb />
+<Deferred>
+  <PoisonedWeb />
+</Deferred>
 
 ## The autopsy
 
@@ -591,7 +605,9 @@ different in kind. One is an engineering constraint. The other is a lie.
 
 ### Flaw (a): the cost is quadratic, and the constant does not save you
 
-<GrowthMeter />
+<Deferred>
+  <GrowthMeter />
+</Deferred>
 
 D3 established that each observation update writes every entry of a $(3+2N)^2$ matrix. The widget
 above measures it rather than asserting it, in your browser, on the same `EkfSlam` implementation
@@ -627,7 +643,9 @@ exactly the ablation toggle in w14.1, applied on purpose and with care.
 
 This one is not about speed, and buying a bigger computer does not touch it.
 
-<ConsistencyAutopsy />
+<Deferred>
+  <ConsistencyAutopsy />
+</Deferred>
 
 The setup is deliberately rigged in the filter's favour. Correspondences are handed over. The
 process noise the filter assumes is *exactly* the noise the simulator applies — not a tuned

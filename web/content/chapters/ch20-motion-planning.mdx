@@ -15,6 +15,8 @@ import { PotentialWell } from '@/components/ch/ch20/potential-well';
 import { PlannerArena } from '@/components/ch/ch20/planner-arena';
 import { NarrowPassage } from '@/components/ch/ch20/narrow-passage';
 import { DubinsDial } from '@/components/ch/ch20/dubins-dial';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -59,7 +61,9 @@ writes: drive toward the goal, and push away from whatever you are about to hit.
 code, it needs no map beyond a range sensor, and it is exactly right — until it is catastrophically
 wrong.
 
-<PotentialWell />
+<Deferred>
+  <PotentialWell />
+</Deferred>
 
 Watch the bead until it stops. Then read the readout: the status is not *failed*, it is *stuck*,
 and the gradient norm is essentially zero. Nothing has gone wrong with the code. The controller has
@@ -91,7 +95,9 @@ room A in the south-west corner of the Apartment to the bedroom in the north-eas
 doorway, down the corridor, and in through another. Every planner sees the same map, the same
 start, the same goal, and the same sample budget.
 
-<PlannerArena />
+<Deferred>
+  <PlannerArena />
+</Deferred>
 
 Four things are worth noticing, and each becomes a theorem later.
 
@@ -162,11 +168,13 @@ Write $R(q) \subset \mathcal{W}$ for the set of workspace points the robot occup
 configuration $q$. Then the obstacle in the workspace induces an obstacle in the configuration
 space:
 
+<LinkedMath>
 $$
 \htmlClass{term-truth}{\mathcal{QO}_i} = \{\, q \in \mathcal{Q} \;:\; R(q) \cap \mathcal{WO}_i \neq \emptyset \,\},
 \qquad
 \htmlClass{term-posterior}{\mathcal{Q}_{\mathrm{free}}} = \mathcal{Q} \setminus \bigcup_i \mathcal{QO}_i
 $$
+</LinkedMath>
 
 A **path** is a continuous map $\tau : [0,1] \to \mathcal{Q}_{\mathrm{free}}$ with
 $\tau(0) = q_{\mathrm{start}}$ and $\tau(1) = q_{\mathrm{goal}}$. A **trajectory** is a path
@@ -193,9 +201,11 @@ $\norm{w - q} \le r$.
 statement $\operatorname{dist}(q, \mathcal{WO}) \le r$. Writing $D(q)$ for the distance from $q$ to
 the nearest obstacle,
 
+<LinkedMath>
 $$
 q \in \htmlClass{term-truth}{\mathcal{Q}_{\mathrm{free}}} \iff \htmlClass{term-measurement}{D(q)} > r
 $$
+</LinkedMath>
 
 **Step 3 — recognize the Minkowski sum.** $\{q : \operatorname{dist}(q, \mathcal{WO}) \le r\}$ is
 precisely the set of points expressible as an obstacle point plus a vector of length at most $r$,
@@ -320,10 +330,12 @@ $g(v_i) \le g^*(v_{i-1}) + c(v_{i-1}, v_i) = g^*(v_i)$. Since $g$ values are alw
 
 **Step 4 — admissibility caps the witness's priority.**
 
+<LinkedMath>
 $$
 f(v_i) \;=\; \htmlClass{term-prior}{g^*(v_i)} + \htmlClass{term-prediction}{h(v_i)}
 \;\le\; g^*(v_i) + h^*(v_i) \;=\; C^*
 $$
+</LinkedMath>
 
 using $h(v_i) \le h^*(v_i)$ and the fact that $v_i$ lies on an optimal path.
 
@@ -382,6 +394,7 @@ pick $\varepsilon$ is to measure it on your map.
 The controller from the hook, written down properly. Khatib's 1986 formulation puts a quadratic
 well at the goal — conic far away, so a distant goal does not produce an absurd pull:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{U_{\mathrm{att}}(q)} =
 \begin{cases}
@@ -389,9 +402,11 @@ $$
 d^*_{\mathrm{goal}}\,\zeta\, d(q, q_{\mathrm{goal}}) - \tfrac{1}{2}\zeta \left(d^*_{\mathrm{goal}}\right)^2 & d > d^*_{\mathrm{goal}}
 \end{cases}
 $$
+</LinkedMath>
 
 and a barrier at every obstacle that switches off entirely beyond a radius of influence $Q^*$:
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{U_{\mathrm{rep}}(q)} =
 \begin{cases}
@@ -399,6 +414,7 @@ $$
 0 & D(q) > Q^*
 \end{cases}
 $$
+</LinkedMath>
 
 Note $D(q)$: the repulsive term is a function of the *distance field*, so its gradient is just the
 direction away from the nearest obstacle, scaled. Chapter 19's ESDF is doing all the geometric work
@@ -587,7 +603,9 @@ and it explains why the narrow-passage problem is really a visibility problem: a
 not because it is small but because almost nothing outside it can see into it.
 </Derivation>
 
-<NarrowPassage />
+<Deferred>
+  <NarrowPassage />
+</Deferred>
 
 Now do the arithmetic the theorem invites, on the widget's own geometry. At a corridor width of
 0.65 m the free area is $\mu = 51.2\ \mathrm{m}^2$, Rusty's radius shrinks the clear width to
@@ -757,9 +775,11 @@ car-like robot cannot follow one at all, and even Rusty's velocity controller
 The constraint is that a wheel cannot slide sideways. In the plane that is one linear equation on
 the velocity:
 
+<LinkedMath>
 $$
 \htmlClass{term-truth}{\dot{x}\sin\theta - \dot{y}\cos\theta = 0}
 $$
+</LinkedMath>
 
 This is a **Pfaffian** constraint: linear in the velocities, and *non-integrable* — there is no
 function $F(x,y,\theta)$ whose level sets it defines. That non-integrability is what makes it
@@ -791,7 +811,9 @@ Pontryagin's maximum principle: the steering that minimizes time is bang-bang, s
 always hard over or dead ahead, and enumerating the possible switch structures leaves only
 $CSC$ and $CCC$ patterns.
 
-<DubinsDial />
+<Deferred>
+  <DubinsDial />
+</Deferred>
 
 ### A worked example you can check by hand
 
@@ -807,9 +829,11 @@ centered at $(0, 1)$ and the one at the goal at $(0, -1)$, so the straight run i
 between their centers, and each turn is three-quarters of a circle. Segments
 $(3\pi/2,\; 2,\; 3\pi/2)$, total
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{c_{LSL} = 3\pi + 2 \approx 11.4248}
 $$
+</LinkedMath>
 
 $RSR$ ties it by reflection. $LSR$ and $RSL$ do not exist at all: an internal tangent needs the two
 circles at least $2\rho$ apart, and here the start's left circle and the goal's right circle are the
@@ -828,9 +852,11 @@ tangent point at $30^\circ$, so the first right arc turns $60^\circ = \pi/3$. By
 $\pi/3$. Measured at $C_2$, the two tangent points sit at $210^\circ$ and $150^\circ$, and the middle arc is a
 *left* turn, so it goes the long way round: $360^\circ - 60^\circ = 300^\circ = 5\pi/3$. Total:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{c_{RLR} = \frac{\pi}{3} + \frac{5\pi}{3} + \frac{\pi}{3} = \frac{7\pi}{3} \approx 7.3304}
 $$
+</LinkedMath>
 
 The three-arc word wins by 36%. $LRL$ ties it by reflection. Check the heading bookkeeping: the net
 turn is $-60^\circ + 300^\circ - 60^\circ = 180^\circ$, as required. This is the fact the Dubins Dial exists to make
@@ -878,9 +904,11 @@ cheapest continuous state per cell, which is what makes the search finite. Near 
 **analytic expansion**: a single Dubins or Reeds–Shepp shot to the goal pose, accepted if it is
 collision-free. And drive it with a dual heuristic,
 
+<LinkedMath>
 $$
 h = \max\big(\,\htmlClass{term-prior}{h_{\text{nonholonomic, no obstacles}}},\ \htmlClass{term-measurement}{h_{\text{holonomic, with obstacles}}}\,\big)
 $$
+</LinkedMath>
 
 The first term is a precomputed Reeds–Shepp lookup table that knows about the turning radius but not
 the walls; the second is exactly the wave-front from earlier in this chapter, which knows about the

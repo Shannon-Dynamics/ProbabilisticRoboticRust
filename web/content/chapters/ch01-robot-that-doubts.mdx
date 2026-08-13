@@ -15,6 +15,8 @@ import { DeadReckoner } from '@/components/ch/ch01/dead-reckoner';
 import { FiveUncertainties } from '@/components/ch/ch01/five-uncertainties';
 import { HallwayBeliefPreview } from '@/components/ch/ch01/hallway-belief-preview';
 import { HowToReadThisBook } from '@/components/ch/ch01/how-to-read-this-book';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -56,7 +58,9 @@ it has never seen.
 
 Right now Rusty has one job: drive a 2.4 m square and come back to where it started.
 
-<DeadReckoner />
+<Deferred>
+  <DeadReckoner />
+</Deferred>
 
 Watch a full lap before reading on. Three things are happening, and only one of them is a surprise.
 
@@ -91,7 +95,9 @@ Uncertainty is not one phenomenon. Thrun, Burgard, and Fox open *Probabilistic R
 splitting it into five sources, and the taxonomy has aged perfectly: every failure mode in the
 following chapters is one of these five wearing a costume.
 
-<FiveUncertainties />
+<Deferred>
+  <FiveUncertainties />
+</Deferred>
 
 Two observations before we move on, because they set up the entire structure of the book.
 
@@ -145,10 +151,12 @@ when the world is in state $x$. Here:
 **Step 2 — the belief-follower averages the loss over the belief.** It chooses the action minimizing
 expected loss under the full distribution:
 
+<LinkedMath>
 $$
 a^\star \;=\; \arg\min_a\; \mathbb{E}_{\htmlClass{term-posterior}{\bel(x)}}\big[L(a, x)\big]
 \;=\; \arg\min_a\; \sum_x \htmlClass{term-posterior}{\bel(x)}\, L(a, x)
 $$
+</LinkedMath>
 
 Substituting the numbers:
 
@@ -165,9 +173,11 @@ The belief-follower senses. Expected cost: **1**.
 **Step 3 — the mode-follower collapses first, then evaluates.** It replaces the belief with its
 most probable state and asks what is best *there*:
 
+<LinkedMath>
 $$
 \hat{a} \;=\; \arg\min_a\; L\big(a,\; \arg\max_x \htmlClass{term-posterior}{\bel(x)}\big)
 $$
+</LinkedMath>
 
 At the mode, $x = \text{left}$, going left costs 0 and sensing costs 1. So the mode-follower goes
 left, and pays $0.45 \cdot 10 = 4.5$ in expectation. It is not being reckless; from inside its own
@@ -250,7 +260,9 @@ correctly 60% of the time when facing one, and cries "door" 20% of the time when
 Rusty is switched on somewhere in this corridor, with no idea where. It senses. It drives one cell
 to the right. It senses again. Where is it?
 
-<HallwayBeliefPreview />
+<Deferred>
+  <HallwayBeliefPreview />
+</Deferred>
 
 Play the loop once, and then look at what happened at each step.
 
@@ -279,6 +291,7 @@ right of a door*. The pattern did the work.
 <Derivation title="Sense, move, sense — every number" result="bel(5) = 9/26 ≈ 0.3462">
 Write $\bel$ as a ten-vector. The measurement likelihood for the reading $z = \text{door}$ is
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{p(z = \text{door} \mid x)} =
 \begin{cases}
@@ -286,17 +299,20 @@ $$
 0.2 & \text{otherwise}
 \end{cases}
 $$
+</LinkedMath>
 
 **Step 1 — the prior.** Maximum ignorance over ten cells:
 $\htmlClass{term-prior}{\bel(x) = 0.1}$ for every $x$.
 
 **Step 2 — sense "door": multiply, then normalize.** Pointwise product with the likelihood:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\bel(x)} \;=\; \eta\;
 \htmlClass{term-measurement}{p(z \mid x)}\;
 \htmlClass{term-prior}{\bel(x)}
 $$
+</LinkedMath>
 
 Unnormalized, door cells hold $0.1 \times 0.6 = 0.06$ and the rest $0.1 \times 0.2 = 0.02$. The sum
 is $3(0.06) + 7(0.02) = 0.32$, so $\eta = 1/0.32$ and
@@ -336,9 +352,11 @@ peaks interact:
 The sum is $4(0.0375) + 0.1125 + 5(0.0125) = 0.325$, so $\eta = 1/0.325$ and every entry lands on a
 clean twenty-sixth:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\bel} = \tfrac{1}{26}\,(1,\ 3,\ 3,\ 1,\ 3,\ \mathbf{9},\ 3,\ 1,\ 1,\ 1)
 $$
+</LinkedMath>
 
 **Step 5 — read it out.** $\bel(5) = 9/26 \approx 0.3462$, against $3/26 \approx 0.1154$ at cells 1,
 2, 4 and 6, and $1/26 \approx 0.0385$ everywhere else. One hypothesis is now three times as
@@ -815,7 +833,9 @@ crate; nothing before then needs it.
 
 ## How to read this book
 
-<HowToReadThisBook />
+<Deferred>
+  <HowToReadThisBook />
+</Deferred>
 
 Three promises are worth stating explicitly, because the rest of the book is built on them.
 

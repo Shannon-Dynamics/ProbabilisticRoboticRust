@@ -1,7 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fitViewport, readPalette, toWorld, type Palette, type Viewport } from '@/lib/sim/draw';
+import {
+  fitViewport,
+  mutePalette,
+  readPalette,
+  toWorld,
+  type Palette,
+  type Viewport,
+} from '@/lib/sim/draw';
+import { useHoveredRole } from '@/lib/explorable/store';
 
 export interface SimCanvasProps {
   /** World rectangle to fit into the canvas. */
@@ -45,6 +53,9 @@ export function SimCanvas({
   const wrapRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 800 / aspect });
   const [paletteVersion, setPaletteVersion] = useState(0);
+  // When the reader points at a term in an equation, every figure on the page
+  // brings that role forward. Widgets need not know this happens.
+  const hoveredRole = useHoveredRole();
   const drawRef = useRef(draw);
   drawRef.current = draw;
 
@@ -77,10 +88,10 @@ export function SimCanvas({
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const v = fitViewport(world, size.w, size.h, padding);
-    const p = readPalette(canvas);
+    const p = mutePalette(readPalette(canvas), hoveredRole);
     drawRef.current(ctx, v, p);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [size.w, size.h, padding, paletteVersion, world, ...deps]);
+  }, [size.w, size.h, padding, paletteVersion, hoveredRole, world, ...deps]);
 
   const handlePointer = useCallback(
     (phase: 'down' | 'move' | 'up') => (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -99,7 +110,15 @@ export function SimCanvas({
         role="img"
         aria-label={ariaLabel}
         className="sim-canvas rounded-sm"
-        style={{ width: size.w, height: size.h, cursor: cursor ?? (onPointer ? 'grab' : 'default') }}
+        // A pixel width here would become the element's min-content size, and a
+        // grid track that sizes to content would then widen the whole page on a
+        // phone. The bitmap is still sized from the measured width below.
+        style={{
+          width: '100%',
+          maxWidth: '100%',
+          height: size.h,
+          cursor: cursor ?? (onPointer ? 'grab' : 'default'),
+        }}
         onPointerDown={
           onPointer
             ? (e) => {

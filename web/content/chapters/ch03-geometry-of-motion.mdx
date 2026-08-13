@@ -15,6 +15,8 @@ import { WrapAroundTrap } from '@/components/ch/ch03/wrap-around-trap';
 import { FrameComposer } from '@/components/ch/ch03/frame-composer';
 import { ExpLogLens } from '@/components/ch/ch03/exp-log-lens';
 import { BananaPreview } from '@/components/ch/ch03/banana-preview';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -57,7 +59,9 @@ where either estimate said, having averaged two nearly identical opinions into t
 opposite. Nothing was noisy, nothing was miscalibrated, and no floating-point rounding was
 involved. The arithmetic was simply applied to objects that do not support it.
 
-<WrapAroundTrap />
+<Deferred>
+  <WrapAroundTrap />
+</Deferred>
 
 The failure is not an edge case to be patched with an `if` statement. It is structural: headings
 live on a circle, and a circle has no consistent notion of "add these two numbers." Every quantity
@@ -110,7 +114,9 @@ Read every transform name left to right as **target-from-source**. Then ${}^{A}_
 something expressed in $\{B\}$ and produces something expressed in $\{A\}$, and the rule for
 chaining transforms writes itself: adjacent indices must match, and they cancel.
 
-<FrameComposer />
+<Deferred>
+  <FrameComposer />
+</Deferred>
 
 Two features of that widget deserve to be stated as mathematics rather than left as observations.
 
@@ -411,7 +417,9 @@ combined with a translation along it, and in the plane the translation vanishes,
 rotation about a point or a pure translation. $V$ is the bookkeeping that converts "how far I
 drove along the arc" into "where I ended up".
 
-<ExpLogLens />
+<Deferred>
+  <ExpLogLens />
+</Deferred>
 
 <KeyIdea title="Why this matters four chapters early">
 $\exp\!\big((\Delta s, 0, \Delta\theta)\T\big)$ *is* the constant-curvature arc a differential
@@ -473,11 +481,13 @@ mean, Gauss–Newton adds a step to an iterate, a particle filter adds noise to 
 $\SEtwo$ that expression is undefined. The fix is to *define* it, once, with the two operators
 already used informally above:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{x \bplus \delta} = x \cdot \exp(\delta^{\wedge}),
 \qquad
 \htmlClass{term-measurement}{y \bminus x} = \log\!\big(x^{-1}y\big)^{\vee}.
 $$
+</LinkedMath>
 
 <Derivation title="⊞ and ⊟ satisfy the Hertzberg axioms" result="x ⊞ 0 = x;  x ⊞ (y ⊟ x) = y;  (x ⊞ δ) ⊟ x = δ">
 **Axiom 1 — the zero increment does nothing.**
@@ -566,17 +576,21 @@ $\theta$ you wrote down. The standard repair is a **concentrated Gaussian**: put
 Gaussian in the tangent space, where it *is* at home, and push it onto the group through the
 retraction,
 
+<LinkedMath>
 $$
 x = \htmlClass{term-truth}{\bar{x}} \bplus \boldsymbol\delta,
 \qquad
 \boldsymbol\delta \sim \Normal(0, \Sigma), \quad \Sigma \in \R^{3\times3} .
 $$
+</LinkedMath>
 
 The mean $\bar x$ lives on the manifold, the covariance lives in the tangent space at $\bar x$,
 and every operation a filter performs happens in that tangent space. What the construction
 produces in $(x, y)$ coordinates is not an ellipse.
 
-<BananaPreview />
+<Deferred>
+  <BananaPreview />
+</Deferred>
 
 Two consequences, both of which get proper treatment later. First, $\E[\exp(\tau)] \ne
 \exp(\E[\tau])$: the sample mean of the cloud is not the commanded endpoint, and the gap grows

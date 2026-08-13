@@ -15,6 +15,8 @@ import { ParallelUniverses } from '@/components/ch/ch17/parallel-universes';
 import { FactorizationDiagram } from '@/components/ch/ch17/factorization-diagram';
 import { ProposalQuality } from '@/components/ch/ch17/proposal-quality';
 import { DepletionMeter } from '@/components/ch/ch17/depletion-meter';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -74,7 +76,9 @@ So here is the trade. Sample only the part that is genuinely hard — the path �
 everything else. What the reader sees below is $M$ separate universes, each of which took a
 different guess about where Rusty went, and each of which built the map that guess implies.
 
-<ParallelUniverses />
+<Deferred>
+  <ParallelUniverses />
+</Deferred>
 
 Watch it for a lap before reading on. Three things are worth your attention, and each one is a
 section of this chapter.
@@ -108,7 +112,9 @@ on a guess about it, and then keeping many guesses around so that the conditioni
 Formally, conditioning on the path does something stronger than making mapping convenient. It makes
 the landmarks **independent of one another**.
 
-<FactorizationDiagram />
+<Deferred>
+  <FactorizationDiagram />
+</Deferred>
 
 Look at the graphical model with the path marginalized out. Landmark $m_1$ was seen from poses
 $x_0, x_1, x_2$; landmark $m_3$ was seen from $x_3, x_4, x_5$. They were never observed together,
@@ -158,12 +164,14 @@ guess once and live with forever, becomes a sampled variable like any other.
 
 Everything rests on one identity. With known correspondences $c_{1:t}$,
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{p(x_{0:t}, m \mid z_{1:t}, u_{1:t}, c_{1:t})}
 \;=\;
 \htmlClass{term-prior}{p(x_{0:t} \mid z_{1:t}, u_{1:t}, c_{1:t})}
 \;\prod_{j=1}^{N} \htmlClass{term-measurement}{p(m_j \mid x_{0:t}, z_{1:t}, c_{1:t})}
 $$
+</LinkedMath>
 
 Read it right to left. The product on the right is $N$ independent two-dimensional Gaussians, each
 of which a Kalman filter can maintain in closed form. The factor on the left is a distribution over
@@ -247,9 +255,11 @@ Let $\varphi(X, Y)$ be any estimator of a quantity of interest, where $X$ is wha
 is what we could integrate out. The **Rao–Blackwell** estimator is the conditional expectation
 $\E[\varphi \mid X]$, and it satisfies
 
+<LinkedMath>
 $$
 \Var\big[\htmlClass{term-posterior}{\E[\varphi \mid X]}\big] \;\le\; \Var\big[\htmlClass{term-prediction}{\varphi(X, Y)}\big]
 $$
+</LinkedMath>
 
 Identify $X$ with the path and $Y$ with the map, and the statement becomes: a filter that samples
 trajectories and computes map posteriors is *never worse*, in variance, than one that samples both
@@ -304,15 +314,18 @@ world states rather than full belief distributions.
 Now make it concrete. Particle $i$ holds a pose $x_{t-1}^{[i]}$ and, for each landmark, a Gaussian
 $\Normal(\mu_{j}^{[i]}, \Sigma_{j}^{[i]})$. It draws a new pose from the motion model,
 
+<LinkedMath>
 $$
 x_t^{[i]} \sim \htmlClass{term-prediction}{p(x_t \mid x_{t-1}^{[i]}, u_t)}
 $$
+</LinkedMath>
 
 using `sample_motion_model_odometry` from [Chapter 9](/chapters/ch09-motion-models) — the proposal
 is the motion prior, which is the same choice Monte Carlo localization made in
 [Chapter 12](/chapters/ch12-localization-global), for the same reason: everything cancels except the
 measurement likelihood. Here that likelihood must be *marginal over the landmark*, and the result is
 
+<LinkedMath>
 $$
 w_t^{[i]} \;=\; \big|2\pi \mat{S}_t^{[i]}\big|^{-1/2}
 \exp\!\left(-\tfrac{1}{2}\, \boldsymbol{\nu}\T (\mat{S}_t^{[i]})^{-1} \boldsymbol{\nu}\right),
@@ -321,6 +334,7 @@ w_t^{[i]} \;=\; \big|2\pi \mat{S}_t^{[i]}\big|^{-1/2}
 \quad
 \mat{S}_t^{[i]} = \mat{H}_m \Sigma_{c_t}^{[i]} \mat{H}_m\T + \mat{Q}_t
 $$
+</LinkedMath>
 
 That $\mat{S}_t$ should look familiar: it is the innovation covariance from
 [Chapter 11](/chapters/ch11-localization-gaussian), the same matrix that defines the Mahalanobis
@@ -341,11 +355,13 @@ marginalized out, not evaluated at some sampled map.
 
 **Step 2 — marginalize the landmark.** Insert the landmark and integrate it back out:
 
+<LinkedMath>
 $$
 p(z_t \mid x_{0:t}^{[i]}, z_{1:t-1}, c_t = j)
 = \int \htmlClass{term-measurement}{p(z_t \mid x_t^{[i]}, m_j)}\;
        \htmlClass{term-prior}{p(m_j \mid x_{0:t-1}^{[i]}, z_{1:t-1})}\; dm_j
 $$
+</LinkedMath>
 
 **Step 3 — linearize and use the Gaussian identity.** The measurement model
 $h(x_t, m_j)$ is nonlinear (a range and a bearing), so expand it about the landmark mean:
@@ -388,7 +404,9 @@ the wheels are vague and the sensor is precise — which describes every robot b
 likelihood concentrates them in a region a few centimetres wide; and almost every particle lands
 somewhere the measurement considers absurd.
 
-<ProposalQuality />
+<Deferred>
+  <ProposalQuality />
+</Deferred>
 
 The counters underneath make the cost quantitative. At the default $\sigma_r = 5$ cm the
 motion-prior proposal puts about 43% of its samples inside the posterior's 90% region and lands an
@@ -400,10 +418,12 @@ $\sigma_r = 40$ cm it is under two.
 
 The fix is to fold $z_t$ into the proposal itself:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\pi(x_t)} \;=\; p\big(x_t \mid x_{1:t-1}^{[i]},\, u_{1:t},\, z_{1:t},\, c_{1:t}\big)
 \;\propto\; \htmlClass{term-measurement}{p(z_t \mid x_t, m^{[i]})}\;\htmlClass{term-prediction}{p(x_t \mid x_{t-1}^{[i]}, u_t)}
 $$
+</LinkedMath>
 
 This is the *optimal* proposal in Doucet's sense — among proposals that use the information
 available at time $t$, it minimizes the variance of the importance weights. Linearizing the
@@ -500,7 +520,9 @@ garbage for the first ten steps and never recovers.
 **Resampling is a cost, not a service.** Chapter 8 said this about localization; here it decides
 whether there are still competing universes left when the loop finally closes.
 
-<DepletionMeter />
+<Deferred>
+  <DepletionMeter />
+</Deferred>
 
 The three policies expose two different failure modes, and the instructive part is that the meter
 everyone watches only sees one of them.

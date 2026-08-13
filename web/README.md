@@ -17,11 +17,23 @@ Then:
 
 ```sh
 npm install
-npm run dev        # http://localhost:3000
+npm run dev        # development server — slow by design, see below
 npm run build      # typecheck + static export to out/
+npm run preview    # serve the built book with compression (this is what to read)
 npm run check      # numerical self-checks of the algorithm library
 npm run typecheck
 ```
+
+**Read the book through `npm run preview`, not `npm run dev`.** The chapters are
+long and dense with pre-rendered mathematics — a big one is about 3 MB of HTML,
+which compresses to roughly 230 kB. `preview` serves the built output with gzip,
+the way GitHub Pages or any CDN would. A development server ships unminified
+React, recompiles on navigation, and sends everything uncompressed; on a modest
+machine that is the difference between a book and a slideshow.
+
+If you serve `out/` some other way, make sure compression is on. `python3 -m
+http.server` does not compress, and a chapter will arrive 13× larger than it
+needs to.
 
 After adding or renaming a chapter file, regenerate the content index with `npx fumadocs-mdx`
 (the `postinstall` hook also does this).

@@ -15,6 +15,8 @@ import { MclTheater } from '@/components/ch/ch12/mcl-theater';
 import { GridVsCloud } from '@/components/ch/ch12/grid-vs-cloud';
 import { RecoveryWard } from '@/components/ch/ch12/recovery-ward';
 import { CrowdMode } from '@/components/ch/ch12/crowd-mode';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -69,7 +71,9 @@ cleanest way to measure that ability.
 Here is all three at once. Rusty wakes up with no idea where it is, in the Apartment from
 [Chapter 4](/chapters/ch04-rusty-and-sensors).
 
-<MclTheater />
+<Deferred>
+  <MclTheater />
+</Deferred>
 
 Watch one full cycle before reading on. Three things are happening, and each is a section of this
 chapter.
@@ -123,6 +127,7 @@ The most direct way to represent "anywhere" is to chop the pose space into cells
 for each one. That is the discrete Bayes filter of [Chapter 8](/chapters/ch08-nonparametric-filters),
 applied to $\SEtwo$ instead of a corridor, and it is Thrun's **Table 8.1**:
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\bar p_{k,t}}
 = \sum_j \htmlClass{term-prediction}{p(\mathbf{x}_k \mid u_t, \mathbf{x}_j)}\;
@@ -132,6 +137,7 @@ $$
 = \eta\; \htmlClass{term-measurement}{p(z_t \mid \mathbf{x}_k, m)}\;
   \htmlClass{term-prediction}{\bar p_{k,t}}
 $$
+</LinkedMath>
 
 Both models are evaluated at the cell's centre of mass, $\mathrm{mean}(\mathbf{x}_k)$. The typical
 metric resolution in the literature is 15 cm in $x$ and $y$ and 5° in $\theta$, and it is worth
@@ -218,7 +224,9 @@ intake, thereby reducing the localization accuracy". You are trading the *right*
 $\blacksquare$
 </Derivation>
 
-<GridVsCloud />
+<Deferred>
+  <GridVsCloud />
+</Deferred>
 
 The measured numbers in that widget are worth staring at, because they are the whole argument for
 particles. Running the same logged route in this browser, the grid's steady-state error is set by
@@ -273,28 +281,34 @@ sample by $f(x)/g(x)$. Everything below is bookkeeping about which is which.
 particle $x_{t-1}^{[i]}$ that is already distributed as $\bel(x_{t-1})$. The marginal distribution of
 the result is therefore
 
+<LinkedMath>
 $$
 g(x_t) \;=\; \int \htmlClass{term-prediction}{p(x_t \mid u_t, x_{t-1})}\,
                   \htmlClass{term-prior}{\bel(x_{t-1})}\, dx_{t-1}
 \;=\; \htmlClass{term-prediction}{\belbar(x_t)}
 $$
+</LinkedMath>
 
 which is precisely line 2 of the Bayes filter. The prediction step *is* the proposal.
 
 **Step 2 — the target.** We want the posterior, which is line 3 of the Bayes filter:
 
+<LinkedMath>
 $$
 f(x_t) \;=\; \htmlClass{term-posterior}{\bel(x_t)}
 \;=\; \eta\, \htmlClass{term-measurement}{p(z_t \mid x_t, m)}\, \htmlClass{term-prediction}{\belbar(x_t)}
 $$
+</LinkedMath>
 
 **Step 3 — divide.** The predicted belief appears in both, and cancels:
 
+<LinkedMath>
 $$
 w_t^{[i]} \;=\; \frac{f(x_t^{[i]})}{g(x_t^{[i]})}
 \;=\; \frac{\eta\, p(z_t \mid x_t^{[i]}, m)\, \belbar(x_t^{[i]})}{\belbar(x_t^{[i]})}
 \;=\; \eta\, \htmlClass{term-measurement}{p(z_t \mid x_t^{[i]}, m)}
 $$
+</LinkedMath>
 
 The normalizer $\eta$ is common to all particles and dies in the normalization, so the weight is the
 raw measurement likelihood. This single cancellation is the reason line 4 is one function call.
@@ -322,10 +336,12 @@ when using MCL."
 The cheap fix is to lie about the sensor in a controlled way — inflate its noise, or equivalently
 raise the likelihood to a power:
 
+<LinkedMath>
 $$
 \tilde p(z_t \mid x_t, m) \;=\; \htmlClass{term-measurement}{p(z_t \mid x_t, m)^{1/\kappa}},
 \qquad \kappa \ge 1
 $$
+</LinkedMath>
 
 This is the **tempering** slider in the Theater, and $\kappa$ is doing something specific: it is not
 modelling the sensor, it is modelling *the particle filter's own approximation error*. Turn $\kappa$
@@ -379,26 +395,32 @@ The detector needs a statistic that says "things are going worse than usual" wit
 map-specific threshold. Thrun's answer uses a quantity the filter already computes and normally
 throws away: the mean unnormalized weight,
 
+<LinkedMath>
 $$
 w_{avg} \;=\; \frac{1}{M}\sum_{i=1}^{M} \htmlClass{term-measurement}{w_t^{[i]}}
 \;\approx\; p(z_t \mid z_{1:t-1}, u_{1:t}, m)
 $$
+</LinkedMath>
 
 which is the Monte Carlo estimate of the **evidence** — the same $\eta^{-1}$ that
 [Chapter 5](/chapters/ch05-bayes-filter) flagged as a diagnostic and
 [Chapter 11](/chapters/ch11-localization-gaussian) used for outlier rejection. Smooth it at two
 rates and compare:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{w_{fast}} \leftarrow w_{fast} + \alpha_{fast}\,(w_{avg} - w_{fast}),
 \qquad
 \htmlClass{term-prior}{w_{slow}} \leftarrow w_{slow} + \alpha_{slow}\,(w_{avg} - w_{slow}),
 \qquad 0 \le \alpha_{slow} \ll \alpha_{fast}
 $$
+</LinkedMath>
 
+<LinkedMath>
 $$
 p_{\text{inject}} \;=\; \max\left\{0,\; 1 - \frac{\htmlClass{term-measurement}{w_{fast}}}{\htmlClass{term-prior}{w_{slow}}}\right\}
 $$
+</LinkedMath>
 
 <Derivation title="Why a ratio of two timescales is a calibration-free divergence test" result="p_inject = max(0, 1 − w_fast/w_slow)">
 **Step 1 — what $w_{avg}$ measures.** It is the average probability the current belief assigned to
@@ -459,7 +481,9 @@ off switch. $\blacksquare$
 18. return $\mathcal{X}_t$
 </Algorithm>
 
-<RecoveryWard />
+<Deferred>
+  <RecoveryWard />
+</Deferred>
 
 Two engineering notes that the pseudocode hides and every implementation hits.
 
@@ -518,12 +542,14 @@ flatly rules out and die at the next weighting, so you pay $M \cdot p_{\text{inj
 evaluations to keep a handful. The principled alternative is to let a fraction $\phi$ of the
 particles be proposed by the measurement itself and reverse the roles in the importance ratio:
 
+<LinkedMath>
 $$
 x_t^{[i]} \sim \eta\, \htmlClass{term-measurement}{p(z_t \mid x_t, m)},
 \qquad
 w_t^{[i]} = \int \htmlClass{term-prediction}{p(x_t^{[i]} \mid u_t, x_{t-1})}\,
                  \htmlClass{term-prior}{\bel(x_{t-1})}\, dx_{t-1}
 $$
+</LinkedMath>
 
 <Derivation title="Mixture-MCL weights: swap the roles, swap the weight" result="w ∝ bel-bar(x), the motion side">
 **Step 1 — the identity is symmetric.** Importance sampling only requires weight =
@@ -572,6 +598,7 @@ to the pose that best explains a corridor full of unexpected walls. So we comput
 posterior probability that the reading was caused by an unmodelled object, and drop the beams where
 it is large:
 
+<LinkedMath>
 $$
 p(\bar c_t^k = \text{short} \mid z_t^k, z_{1:t-1}, u_{1:t}, m)
 \;\approx\;
@@ -580,6 +607,7 @@ p(\bar c_t^k = \text{short} \mid z_t^k, z_{1:t-1}, u_{1:t}, m)
 \;>\; \chi_{rej}
 \;\Rightarrow\; \text{reject}
 $$
+</LinkedMath>
 
 The sum runs over particles because the integral over $\bel(x_t)$ has no closed form; Thrun's
 $\bar{\mathcal{X}}_t$ is a *representative* sample, and forty-eight poses estimate a ratio of two
@@ -613,7 +641,9 @@ enormously: long readings are how a delocalized filter discovers that it is lost
 outlier rejector would throw away exactly the evidence that drives recovery. People-filtering and
 kidnap-recovery are designed to coexist.
 
-<CrowdMode />
+<Deferred>
+  <CrowdMode />
+</Deferred>
 
 ## Implementation in Rust
 

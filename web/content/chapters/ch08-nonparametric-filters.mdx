@@ -15,6 +15,8 @@ import { ParticleSurvivalArena } from '@/components/ch/ch08/particle-survival-ar
 import { ResamplingWheel } from '@/components/ch/ch08/resampling-wheel';
 import { GridResolutionLadder } from '@/components/ch/ch08/grid-resolution-ladder';
 import { LogOddsFlipFlop } from '@/components/ch/ch08/log-odds-flip-flop';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -68,7 +70,9 @@ with nothing in its state to record that a choice was ever made.
 This is not a tuning problem. A Gaussian has one mode; the posterior has three; the mismatch is
 structural. So represent the belief with something that can hold three answers at once.
 
-<ParticleSurvivalArena />
+<Deferred>
+  <ParticleSurvivalArena />
+</Deferred>
 
 Watch a few full cycles before reading on. Three things are happening, and each is a section of
 this chapter.
@@ -220,7 +224,9 @@ inference error, which is what separates it from the EKF: the EKF is exactly rig
 approximate distribution *and* approximately right about the update. $\blacksquare$
 </Derivation>
 
-<GridResolutionLadder />
+<Deferred>
+  <GridResolutionLadder />
+</Deferred>
 
 The ladder is where the curse of dimensionality stops being a slogan. A 1-D corridor at 2 cm
 resolution is 500 cells and a rounding error of a computation. The *same* resolution over
@@ -239,11 +245,13 @@ prediction step at all — the filter is pure evidence accumulation.
 
 Write the belief in **log odds**:
 
+<LinkedMath>
 $$
 \ell_t \;=\; \log \frac{\bel_t(x)}{1 - \bel_t(x)}
 \qquad\Longleftrightarrow\qquad
 \htmlClass{term-posterior}{\bel_t(x)} \;=\; 1 - \frac{1}{1 + \exp \ell_t}
 $$
+</LinkedMath>
 
 Log odds run from $-\infty$ to $+\infty$, which means no amount of confidence can numerically round
 to exactly 0 or 1 — the truncation problem that kills naive product-of-probabilities updates.
@@ -326,7 +334,9 @@ a sum, and sums commute. For a genuinely static state, the order the evidence ar
 irrelevant. Exercise 3 asks what breaks the moment the state can change. $\blacksquare$
 </Derivation>
 
-<LogOddsFlipFlop />
+<Deferred>
+  <LogOddsFlipFlop />
+</Deferred>
 
 <Callout type="info">
 Run one of these per grid cell and you have occupancy grid mapping.
@@ -344,12 +354,14 @@ cannot even evaluate $f$ without the normalizer. What we *can* do is draw from s
 Let $g$ be any density we can sample, with the single condition that it covers $f$'s support:
 $f(x) > 0 \Rightarrow g(x) > 0$. Then for any statistic $\phi$,
 
+<LinkedMath>
 $$
 \E_f[\phi(x)] = \int \phi(x)\, f(x)\, dx
 = \int \phi(x)\, \frac{f(x)}{g(x)}\, g(x)\, dx
 = \E_g\!\left[ \htmlClass{term-measurement}{w(x)}\, \phi(x) \right],
 \qquad w(x) = \frac{f(x)}{g(x)}
 $$
+</LinkedMath>
 
 Multiply and divide by $g$; recognize an expectation under $g$. That is the entire idea, and it is
 worth appreciating how much it buys: *you may sample from the wrong distribution on purpose,
@@ -409,12 +421,14 @@ in that space the algebra has no integrals in it.
 **Step 1 — factor the target.** Applying Bayes rule and the Markov assumption exactly as in
 [Chapter 5](/chapters/ch05-bayes-filter), but keeping every state instead of marginalizing:
 
+<LinkedMath>
 $$
 p(x_{0:t} \mid z_{1:t}, u_{1:t}) = \eta\;
 \htmlClass{term-measurement}{p(z_t \mid x_t)}\;
 \htmlClass{term-prediction}{p(x_t \mid x_{t-1}, u_t)}\;
 \htmlClass{term-prior}{p(x_{0:t-1} \mid z_{1:t-1}, u_{1:t-1})}
 $$
+</LinkedMath>
 
 Note the absence of integral signs. That is the payoff of working in trajectory space.
 
@@ -423,9 +437,11 @@ according to $\bel(x_{0:t-1})$. Line 4 of the algorithm draws
 $x_t^{[i]} \sim p(x_t \mid x_{t-1}^{[i]}, u_t)$, so the density the new particles actually follow
 is
 
+<LinkedMath>
 $$
 g = \htmlClass{term-prediction}{p(x_t \mid x_{t-1}, u_t)}\; \htmlClass{term-prior}{\bel(x_{0:t-1})}
 $$
+</LinkedMath>
 
 This is the **proposal distribution**: the motion model applied to the previous belief. It is the
 easiest thing in the world to sample and it completely ignores $z_t$.
@@ -433,12 +449,14 @@ easiest thing in the world to sample and it completely ignores $z_t$.
 **Step 3 — take the ratio and watch it collapse.** The target from Step 1 has the proposal from
 Step 2 sitting inside it as a factor, so the division is almost total:
 
+<LinkedMath>
 $$
 w_t^{[i]} = \frac{\text{target}}{\text{proposal}}
 = \frac{\eta\; p(z_t \mid x_t)\; \overbrace{p(x_t \mid x_{t-1}, u_t)\; \bel(x_{0:t-1})}^{\text{exactly the proposal}}}
        {p(x_t \mid x_{t-1}, u_t)\; \bel(x_{0:t-1})}
 = \eta\; \htmlClass{term-measurement}{p(z_t \mid x_t^{[i]})}
 $$
+</LinkedMath>
 
 Everything cancels except the measurement likelihood. *That* is why a particle filter is fifteen
 lines: choosing the motion model as the proposal makes the importance weight equal to the thing you
@@ -553,7 +571,9 @@ variance sits between the two, and Exercise 6 asks you to measure it. $\blacksqu
 13. return $\bar{\mathcal{X}}_t$
 </Algorithm>
 
-<ResamplingWheel />
+<Deferred>
+  <ResamplingWheel />
+</Deferred>
 
 ### Degeneracy, deprivation, and when not to resample
 

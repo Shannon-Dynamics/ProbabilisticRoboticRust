@@ -15,6 +15,8 @@ import { PlanVsPolicy } from '@/components/ch/ch21/plan-vs-policy';
 import { PolicyPainter } from '@/components/ch/ch21/policy-painter';
 import { BellmanStepper } from '@/components/ch/ch21/bellman-stepper';
 import { CliffRun } from '@/components/ch/ch21/cliff-run';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -59,7 +61,9 @@ Here is the experiment, run twice on the same world, with the same solver and th
 numbers. On the left, Rusty commits to the optimal *action sequence* and replays it open-loop. On
 the right, Rusty consults the same solver's answer at every step.
 
-<PlanVsPolicy />
+<Deferred>
+  <PlanVsPolicy />
+</Deferred>
 
 At zero slip the two pictures are identical, and that identity is the whole reason deterministic
 planning ever worked: when execution is perfect, the sequence of actions along the optimal path
@@ -121,7 +125,9 @@ floorplan; you paint payoff onto cells; value iteration re-converges live and th
 read off whatever the value function currently is. Nothing is precomputed, and Rusty walks the
 current policy — including while it is still wrong.
 
-<PolicyPainter />
+<Deferred>
+  <PolicyPainter />
+</Deferred>
 
 Three things repay a minute of watching, and each one is a theorem later in the chapter.
 
@@ -190,9 +196,11 @@ of the goal rather than in the goal cell itself.
 
 A **Markov decision process** is the tuple
 
+<LinkedMath>
 $$
 \big(\, \mathcal{X},\; \mathcal{U},\; \htmlClass{term-prediction}{p(x' \mid x, u)},\; \htmlClass{term-measurement}{r(x, u)},\; \gamma \,\big)
 $$
+</LinkedMath>
 
 with three standing assumptions, each of which is load-bearing and each of which is false somewhere.
 
@@ -317,11 +325,13 @@ and the middle one is why the parameter is worth a slider.
 
 Fix a policy $\pi$ and run it forever. The **return** is the discounted sum of payoffs,
 
+<LinkedMath>
 $$
 R_T \;=\; \E\!\left[\, \sum_{\tau=0}^{T} \gamma^{\tau}\, r_{\tau} \,\right],
 \qquad
 \htmlClass{term-posterior}{V^{\pi}(x)} \;=\; \E\!\left[\, \sum_{\tau=0}^{\infty} \gamma^{\tau}\, r(x_\tau, \pi(x_\tau)) \;\middle|\; x_0 = x \right]
 $$
+</LinkedMath>
 
 Discounting does two jobs, and it is worth separating them because only one is mathematical.
 
@@ -348,25 +358,31 @@ not worth walking to. You can watch it happen with the Policy Painter's $\gamma$
 
 Define the optimal value function $V^*(x) = \max_\pi V^\pi(x)$ and the **state–action value**
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{Q^{*}(x, u)} \;=\; \htmlClass{term-measurement}{r(x, u)} \;+\; \htmlClass{term-prior}{\gamma \sum_{x'} p(x' \mid x, u)\, V^{*}(x')}
 $$
+</LinkedMath>
 
 — the value of committing to $u$ *once* and behaving optimally forever after. Then the whole of
 dynamic programming is the observation that $V^*$ is the pointwise max of $Q^*$:
 
+<LinkedMath>
 $$
 \boxed{\;
 \htmlClass{term-posterior}{V^{*}(x)} \;=\; \max_{u \in \mathcal{U}} \left[\, \htmlClass{term-measurement}{r(x, u)} \;+\; \htmlClass{term-prior}{\gamma \sum_{x'} p(x' \mid x, u)\, V^{*}(x')} \,\right]
 \;}
 $$
+</LinkedMath>
 
 Read it as a sentence: *the best you can do from here is the best over first moves of (what that
 move pays now) plus (discounted, averaged over where it might land you, the best you can do from
 there)*. The colors match the widget below: green is the immediate payoff, blue is the discounted
 future, purple is the answer.
 
-<BellmanStepper />
+<Deferred>
+  <BellmanStepper />
+</Deferred>
 
 That widget exists because the equation above looks like linear algebra and is not. A backup is
 clerical work: read a handful of neighbours, weight them by how likely you are to reach them,
@@ -484,9 +500,11 @@ how you get a policy that is confidently suboptimal in the one region you cared 
 
 Greedy extraction is the reason value iteration is useful at all:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\pi_V(x)} \;=\; \arg\max_u \left[\, \htmlClass{term-measurement}{r(x, u)} + \htmlClass{term-prior}{\gamma \sum_{x'} p(x' \mid x, u)\, V(x')} \,\right]
 $$
+</LinkedMath>
 
 <Derivation title="Greedy on V* is optimal; greedy on a nearby V is nearly optimal" result="V^{π_V} ≥ V* − 2γ‖V − V*‖∞ / (1−γ)">
 **Part A — exactness at the fixed point.** Let $\pi^* = \pi_{V^*}$ and let $\mathcal{T}_{\pi}$ be
@@ -650,7 +668,9 @@ Before touching the widget, commit to a guess. The ledge is $6$ cells; the detou
 nearly three times as long. A veer on the ledge costs a penalty of $6$ *and* dumps the robot back
 at the start. At what slip $s$ does the optimal policy abandon the ledge?
 
-<CliffRun />
+<Deferred>
+  <CliffRun />
+</Deferred>
 
 Write your number down, then read the derivation.
 
@@ -842,9 +862,11 @@ $-1.25$; from $B$, $-2 + (-1.25) = -3.25$ against $-2.5$; from $A$, $-4.5$ again
 determinism at a price of $2$ is a bad deal when the stochastic option costs $1.25$ in expectation.
 The max gate has something to do at every state, and it always makes the same choice.
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{V^{*} = (-3.75,\; -2.5,\; -1.25,\; 0)}
 $$
+</LinkedMath>
 
 ### The first three sweeps
 

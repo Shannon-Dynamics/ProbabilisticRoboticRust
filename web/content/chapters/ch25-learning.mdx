@@ -15,6 +15,8 @@ import { CalibrationClinic } from '@/components/ch/ch25/calibration-clinic';
 import { TemperingLab } from '@/components/ch/ch25/tempering-lab';
 import { DifferentiableFilterTrainer } from '@/components/ch/ch25/differentiable-filter-trainer';
 import { ResamplingGradientMicroscope } from '@/components/ch/ch25/resampling-gradient-microscope';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -69,7 +71,9 @@ it is right more often than the model the robot shipped with. Then Monte Carlo l
 switched on and the robot loses itself inside twenty seconds — not by drifting, but by committing,
 hard, to a pose that is 30 cm wrong and refusing every subsequent scan that disagrees.
 
-<CalibrationClinic />
+<Deferred>
+  <CalibrationClinic />
+</Deferred>
 
 Watch one full sweep of the slider before reading on. Three things are happening, and each one has
 a piece of mathematics later in this chapter.
@@ -153,7 +157,9 @@ underneath it, there is nothing left to re-weight and no recovery is possible �
 deprivation of [Chapter 12](/chapters/ch12-localization-global), arriving not from bad luck but from
 an overconfident model.
 
-<TemperingLab />
+<Deferred>
+  <TemperingLab />
+</Deferred>
 
 The knob in that widget, $\kappa$, is the honest way to talk about this. It does not change *what*
 the model says, only how loudly: $p(z \mid x, m)^\kappa$. And it is not an artificial device —
@@ -219,11 +225,13 @@ $$
 
 **Step 2 — add and subtract the entropy.** Insert $\log p(z) - \log p(z)$:
 
+<LinkedMath>
 $$
 -\int p \log q
 = \underbrace{-\int p \log p}_{\htmlClass{term-truth}{H(p)}}
 + \underbrace{\int p \log \frac{p}{q}}_{\htmlClass{term-measurement}{\KL(p \,\|\, q)}} .
 $$
+</LinkedMath>
 
 **Step 3 — Gibbs' inequality.** $\KL(p \,\|\, q) \ge 0$, by Jensen's inequality applied to the
 convex function $-\log$:
@@ -360,12 +368,14 @@ $\sum_b \frac{n_b}{N}\bar y_b(1-\bar y_b) = \bar y(1-\bar y) - \sum_b \frac{n_b}
 
 **Step 5 — collect.**
 
+<LinkedMath>
 $$
 \mathrm{BS} =
 \underbrace{\sum_b \tfrac{n_b}{N} (\bar f_b - \bar y_b)^2}_{\htmlClass{term-measurement}{\text{reliability}}}
 - \underbrace{\sum_b \tfrac{n_b}{N} (\bar y_b - \bar y)^2}_{\htmlClass{term-posterior}{\text{resolution}}}
 + \underbrace{\bar y (1 - \bar y)}_{\htmlClass{term-truth}{\text{uncertainty}}} .
 $$
+</LinkedMath>
 
 **Reliability** is exactly what the reliability diagram plots — squared distance from the diagonal,
 lower is better. **Resolution** is sharpness that pays: how far the model's conditional frequencies
@@ -382,11 +392,13 @@ $\blacksquare$
 ### The tempered update, and what it costs
 
 <KeyIdea title="D25.4 — Tempered measurement update">
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\bel(x_t)} = \eta\;
 \htmlClass{term-measurement}{p(z_t \mid x_t, m)^{\kappa}}\;
 \htmlClass{term-prediction}{\belbar(x_t)}
 $$
+</LinkedMath>
 
 $\kappa = 1$ is Bayes' rule. $\kappa > 1$ is overconfidence — the regime an independence-violating
 scan product and an overconfident learned model both land in. $\kappa < 1$ is the deliberate
@@ -404,9 +416,11 @@ $$
 which is the same Gaussian in $x$ with $Q$ replaced by $Q/\kappa$. So in the information form of
 [Chapter 6](/chapters/ch06-kalman-filters), the update adds
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\Omega_t} = \htmlClass{term-prediction}{\bar\Omega_t} + \kappa\, H_t\T Q_t^{-1} H_t .
 $$
+</LinkedMath>
 
 **Step 2 — read what that means.** Claimed information grows *linearly* in $\kappa$ while the
 measurement carries exactly as much information as it did before. Ten correlated beams treated as
@@ -532,11 +546,13 @@ predictive density of the measurement — precisely the normalizer $\eta^{-1}$ t
 computed the predicted state $\bar\mu_t, \bar\Sigma_t$; pushing it through the measurement model
 gives
 
+<LinkedMath>
 $$
 z_t \mid z_{1:t-1} \;\sim\; \Normal\!\left(\htmlClass{term-prediction}{H_t \bar\mu_t},\;
 \htmlClass{term-measurement}{S_t}\right), \qquad
 S_t = H_t \bar\Sigma_t H_t\T + Q_t .
 $$
+</LinkedMath>
 
 **Step 4 — sum the logs.** With the innovation $\nu_t = z_t - H_t\bar\mu_t$,
 
@@ -684,7 +700,9 @@ below needs a few hundred steps of trajectory, not a few.
 11. return $\theta$
 </Algorithm>
 
-<DifferentiableFilterTrainer />
+<Deferred>
+  <DifferentiableFilterTrainer />
+</Deferred>
 
 Two things in that widget deserve more than a glance. The trainer starts with a filter that believes
 the cart is wildly unpredictable and the sensor is nearly perfect — the classic tuning mistake, in
@@ -718,9 +736,11 @@ no such smooth reparameterization: the outcome is an index, and indices do not i
 **Step 3 — move the dependence into the weight instead.** Draw indices from a *mixture* of the
 weights and the uniform,
 
+<LinkedMath>
 $$
 q(i) = \lambda\, \htmlClass{term-measurement}{w^{[i]}} + \frac{1 - \lambda}{M},
 $$
+</LinkedMath>
 
 and correct with the importance ratio $w'^{[i]} = w^{[i]} / q(i)$. Unbiasedness is one line: for any
 test function $f$,
@@ -773,7 +793,9 @@ reason differentiable particle filters are trained on short windows. $\blacksqua
 9. return $\bar{\mathcal{X}}_t$
 </Algorithm>
 
-<ResamplingGradientMicroscope />
+<Deferred>
+  <ResamplingGradientMicroscope />
+</Deferred>
 
 ### Learning to act: distributions over actions
 

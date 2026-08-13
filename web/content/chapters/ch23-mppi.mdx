@@ -14,6 +14,8 @@ quoteSource: "Information Theoretic Model Predictive Control: Theory and Applica
 import { RolloutStorm } from '@/components/ch/ch23/rollout-storm';
 import { DynamicWindowBench } from '@/components/ch/ch23/dynamic-window-bench';
 import { TwinVision } from '@/components/ch/ch23/twin-vision';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -65,7 +67,9 @@ The receding-horizon answer is narrower and cheaper. Do not re-plan the route. R
 cycle, a *short* optimal control problem — two seconds, not two minutes — that already knows about
 the chair, and execute one step of its answer.
 
-<RolloutStorm />
+<Deferred>
+  <RolloutStorm />
+</Deferred>
 
 Watch a few cycles before reading on. Three things are worth naming now; each one becomes a theorem
 later in the chapter.
@@ -109,7 +113,9 @@ other:
   endpoint. A hypothesis class of single arcs cannot express "slow, drift left, then turn hard
   right" — not badly, but *at all*.
 
-<DynamicWindowBench />
+<Deferred>
+  <DynamicWindowBench />
+</Deferred>
 
 The velocity plane on the left is where both controllers actually live, and putting them in the same
 axes is the fastest way to see what changed. DWA lays a grid over the reachable box and asks one
@@ -186,10 +192,12 @@ $\kappa \approx 2$. A robot that does not know where it is drives as though it w
 The dynamic window is the intersection of three sets. The actuator envelope
 $V_s = [v_{\min}, v_{\max}] \times [-\omega_{\max}, \omega_{\max}]$; the *reachable* set
 
+<LinkedMath>
 $$
 \htmlClass{term-prior}{V_d} = \big[v - a_{\max}\Delta t,\; v + a_{\max}\Delta t\big] \times
              \big[\omega - \dot\omega_{\max}\Delta t,\; \omega + \dot\omega_{\max}\Delta t\big]
 $$
+</LinkedMath>
 
 around the current command; and the *admissible* set $V_a$, the commands from which the robot can
 still stop before whatever its arc runs into.
@@ -305,9 +313,11 @@ single sequence, project: choose the Gaussian $q(\cdot \mid U, \Sigma_u)$ closes
 KL. Expanding $\KL(q^\star \| q(\cdot|U,\Sigma_u))$ and dropping the terms that do not involve $U$
 leaves a quadratic minimization whose solution is moment matching,
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{u_k^\star} = \E_{q^\star}[v_k], \qquad k = 0, \dots, H-1.
 $$
+</LinkedMath>
 
 The optimal open-loop plan is the **mean of the optimal control distribution**. Not its mode, not
 its best sample.
@@ -343,11 +353,13 @@ not depend on the sample (self-normalization kills it). Writing the standard fam
 $\tilde U = \alpha \hat U$ with $\alpha \in [0,1]$, so that $\hat u_k - \tilde u_k = (1-\alpha)\hat u_k$,
 and setting $\gamma = \lambda(1-\alpha)$:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{\tilde S^{(i)}} \;=\;
 \underbrace{S(V^{(i)})}_{\text{state cost}} \;+\;
 \gamma \sum_{k=0}^{H-1} \htmlClass{term-prior}{\hat u_k}\T \Sigma_u^{-1} \htmlClass{term-prediction}{\epsilon_k^{(i)}} .
 $$
+</LinkedMath>
 
 This second term is the one every quick tutorial drops. It is not decoration: it *is* the quadratic
 control cost, arriving through the likelihood ratio rather than by decree. Choosing $\alpha$ chooses
@@ -365,15 +377,19 @@ what "control cost" means.
 Self-normalized weights are invariant to any constant shift of the cost, so this changes nothing
 mathematically and everything numerically: it guarantees the largest exponent is exactly $e^0 = 1$.
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{w^{(i)}} = \frac{1}{\eta}\exp\!\Big(-\tfrac{1}{\lambda}\big(\tilde S^{(i)} - \rho\big)\Big),
 \qquad
 \eta = \sum_{j} \exp\!\Big(-\tfrac{1}{\lambda}\big(\tilde S^{(j)} - \rho\big)\Big),
 $$
+</LinkedMath>
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{u_k} \;\leftarrow\; \htmlClass{term-prior}{\hat u_k} \;+\; \sum_{i=1}^{K} \htmlClass{term-posterior}{w^{(i)}}\, \htmlClass{term-prediction}{\epsilon_k^{(i)}} .
 $$
+</LinkedMath>
 
 That is the whole algorithm, and it is the self-normalized importance-sampling estimator of
 $\E_{q^\star}[v_k]$ — biased at finite $K$, consistent as $K \to \infty$, exactly like every particle
@@ -425,7 +441,9 @@ Set the two algorithms side by side and there is nothing left to argue about.
 | failure | particle deprivation: no sample near the truth | no rollout near the good maneuver |
 | gauge | $\mathrm{ESS} = 1/\sum_i (w^{(i)})^2$ | the same formula, unchanged |
 
-<TwinVision />
+<Deferred>
+  <TwinVision />
+</Deferred>
 
 The correspondence is not an analogy, and the widget is not a metaphor: both panels run library code
 that the rest of this book already uses. The left one calls `lowVarianceResample` from
@@ -502,9 +520,11 @@ tight corridor it makes most rollouts equally infinite, the weights collapse ont
 squeaked through, and the ESS falls to 1. The smooth barrier over the signed distance field of
 [Chapter 19](/chapters/ch19-map-representations),
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{c_{obs}(x)} = w_o \exp\!\left(-\frac{d_{\text{ESDF}}(x) - r}{\sigma_o}\right),
 $$
+</LinkedMath>
 
 grades the rollouts instead of censoring them, which keeps the importance weights informative. This
 chapter's lab uses the barrier *plus* a flat 900 for actual collision: graded where grading helps,

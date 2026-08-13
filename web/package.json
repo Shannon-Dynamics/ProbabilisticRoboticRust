@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "check": "esbuild scripts/check.mjs --bundle --platform=node --format=esm --outfile=.next/checks.mjs --log-level=error && node .next/checks.mjs",
     "check:book": "node scripts/check-book.mjs",
-    "verify": "npm run check && npm run check:book && npm run build"
+    "verify": "npm run check && npm run check:book && npm run build",
+    "preview": "node scripts/preview.mjs"
   },
   "dependencies": {
     "@nivo/bar": "0.99.0",

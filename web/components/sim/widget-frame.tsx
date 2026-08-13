@@ -12,7 +12,7 @@ export interface WidgetFrameProps {
   children: ReactNode;
   /** Caption beneath the widget: how to read it, what to try. */
   caption?: ReactNode;
-  /** Let the widget bleed wider than the prose column on large screens. */
+  /** Use the full width of the reading column rather than the prose measure. */
   wide?: boolean;
 }
 
@@ -35,7 +35,7 @@ export function WidgetFrame({
   return (
     <figure
       id={id}
-      className={`not-prose my-8 ${wide ? 'lg:-mx-16 xl:-mx-24' : ''}`}
+      className={`not-prose my-8 ${wide ? 'pr-figure-wide' : ''}`}
       aria-labelledby={`${id}-title`}
     >
       <div className="overflow-hidden rounded-md border border-fd-border bg-fd-card">
@@ -61,7 +61,7 @@ export function WidgetFrame({
       </div>
 
       {caption ? (
-        <figcaption className="mt-2 font-ui text-[0.8rem] leading-relaxed text-fd-muted-foreground">
+        <figcaption className="pr-caption mt-2 font-ui text-[0.8rem] leading-relaxed text-fd-muted-foreground">
           {caption}
         </figcaption>
       ) : null}

@@ -5,6 +5,7 @@ import { WidgetFrame } from '@/components/sim/widget-frame';
 import { SimCanvas } from '@/components/sim/sim-canvas';
 import { ControlPanel, Slider, Toggle, Transport } from '@/components/sim/controls';
 import { useSimulation } from '@/lib/sim/use-simulation';
+import { setValue, useExplorable } from '@/lib/explorable/store';
 import { HistogramFilter1D, gaussianKernel } from '@/lib/filters/bayes';
 import { HALLWAY_1D } from '@/lib/sim/world';
 import { Rng } from '@/lib/prob/rng';
@@ -61,6 +62,14 @@ export function HallwayBeliefMachine() {
     moving: true,
   });
 
+  // The prose above this figure carries draggable numbers. Whichever the reader
+  // last touched wins; until then these fall back to the slider values, so the
+  // widget is complete on its own.
+  const scrubbedMotion = useExplorable('ch05.motionNoise', params.motionNoise);
+  const scrubbedSensor = useExplorable('ch05.sensorNoise', params.sensorNoise);
+  const motionNoise = scrubbedMotion;
+  const sensorNoise = scrubbedSensor;
+
   const init = useCallback((seed: number): State => {
     const filter = new HistogramFilter1D({ length: L, cells: CELLS, wrap: true });
     filter.setUniform(); // Global localization: the robot knows nothing.
@@ -86,8 +95,8 @@ export function HallwayBeliefMachine() {
 
       if (doMove && params.moving) {
         // The robot commands a step; the wheels deliver something slightly else.
-        truth = (truth + params.stepSize + rng.normal(0, params.motionNoise) + L) % L;
-        filter.predict(params.stepSize, gaussianKernel(Math.max(params.motionNoise, 1e-3)));
+        truth = (truth + params.stepSize + rng.normal(0, motionNoise) + L) % L;
+        filter.predict(params.stepSize, gaussianKernel(Math.max(motionNoise, 1e-3)));
         phase = { kind: 'predicted', before, likelihood: null, sawDoor: false };
       } else if (!doMove && params.sensing) {
         // The door detector: noisy, and — crucially — it cannot tell the three
@@ -115,7 +124,7 @@ export function HallwayBeliefMachine() {
       const history = [...s.history, { entropy: filter.entropy(), error }].slice(-120);
       return { filter, rng, truth, belief, phase, history };
     },
-    [params],
+    [params, motionNoise],
   );
 
   const sim = useSimulation<State>({ init, step, fps: 3, initialSeed: 11 });
@@ -165,6 +174,8 @@ export function HallwayBeliefMachine() {
       ctx.moveTo(rx, ry);
       ctx.lineTo(rx + 13, ry);
       ctx.stroke();
+
+      ctx.globalAlpha = 1;
 
       if (phase.kind === 'corrected') {
         label(
@@ -220,7 +231,8 @@ export function HallwayBeliefMachine() {
         ctx.setLineDash([]);
       }
 
-      // Baseline + the operation label.
+      // Baseline + the operation label. Chrome never dims with the data.
+      ctx.globalAlpha = 1;
       ctx.strokeStyle = p.grid;
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -284,22 +296,28 @@ export function HallwayBeliefMachine() {
         <Slider
           label="Sensor reliability"
           role="measurement"
-          value={params.sensorNoise}
+          value={sensorNoise}
           min={0.02}
           max={0.45}
           step={0.01}
-          onChange={(v) => setParams((p) => ({ ...p, sensorNoise: v }))}
+          onChange={(v) => {
+            setParams((p) => ({ ...p, sensorNoise: v }));
+            setValue('ch05.sensorNoise', v);
+          }}
           help="Higher means a less trustworthy door detector."
         />
         <Slider
           label="Motion noise σ"
           role="prediction"
-          value={params.motionNoise}
+          value={motionNoise}
           min={0.01}
           max={0.5}
           step={0.01}
           unit="m"
-          onChange={(v) => setParams((p) => ({ ...p, motionNoise: v }))}
+          onChange={(v) => {
+            setParams((p) => ({ ...p, motionNoise: v }));
+            setValue('ch05.motionNoise', v);
+          }}
           help="How badly the wheels betray the commanded step."
         />
         <Slider

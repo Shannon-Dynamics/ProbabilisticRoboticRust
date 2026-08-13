@@ -14,6 +14,10 @@ quoteSource: Probabilistic Robotics, Chapter 1
 import { HallwayBeliefMachine } from '@/components/ch/ch05/hallway-belief-machine';
 import { MarkovBreaker } from '@/components/ch/ch05/markov-breaker';
 import { FilterFamilyTree } from '@/components/ch/ch05/filter-family-tree';
+import { Scrub } from '@/components/book/scrub';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Predict, CheckAnswer, Hints } from '@/components/book/predict';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -55,7 +59,18 @@ is; it knows something weaker and far more useful, which is how plausible each l
 everything that has happened. That object is a **belief**, and this chapter is about how to keep
 one up to date.
 
-<HallwayBeliefMachine />
+<Deferred>
+  <HallwayBeliefMachine />
+</Deferred>
+
+The two numbers that decide everything here are draggable. The wheels deliver the commanded step
+plus an error of about <Scrub id="ch05.motionNoise" value={0.12} min={0.01} max={0.5} step={0.01}
+unit="m" role="prediction" label="motion noise sigma" /> — drag that up and watch every peak in
+the belief widen. The door detector is right about
+<Scrub id="ch05.sensorNoise" value={0.18} min={0.02} max={0.45} step={0.01} role="measurement"
+label="sensor noise" /> of the time; drag *that* and watch how much a single sighting is allowed
+to sharpen the belief. Nothing else about the chapter changes — you are turning the two knobs the
+mathematics below will name.
 
 Watch it for a few cycles before reading on. Three things are worth noticing, and each one
 corresponds to a piece of mathematics later in the chapter.
@@ -112,11 +127,13 @@ have opposite effects on what it knows:
 Two conditional distributions describe these streams. The **motion model** (also called the state
 transition probability) and the **measurement model**:
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{p(x_t \mid x_{t-1}, u_t)}
 \qquad\qquad
 \htmlClass{term-measurement}{p(z_t \mid x_t)}
 $$
+</LinkedMath>
 
 [Chapter 9](/chapters/ch09-motion-models) and [Chapter 10](/chapters/ch10-sensor-models) are
 devoted to writing these down for real hardware. For now they are given.
@@ -125,16 +142,20 @@ devoted to writing these down for real hardware. For now they are given.
 
 The **belief** is the posterior over the state given every measurement and control so far:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{\bel(x_t)} \;=\; p(x_t \mid z_{1:t},\, u_{1:t})
 $$
+</LinkedMath>
 
 It is convenient to name the intermediate object that exists after the control has been folded in
 but before the measurement has:
 
+<LinkedMath>
 $$
 \htmlClass{term-prediction}{\belbar(x_t)} \;=\; p(x_t \mid z_{1:t-1},\, u_{1:t})
 $$
+</LinkedMath>
 
 The difference between those two subscripts — $z_{1:t}$ versus $z_{1:t-1}$ — is the entire
 correction step. Calling $\belbar$ the "prediction" and $\bel$ the "posterior" is exactly the
@@ -154,6 +175,25 @@ orange and purple in the widget above.
 4. endfor
 5. return $\bel(x_t)$
 </Algorithm>
+
+Written out in one line, with each term tinted the colour it wears in every figure in this book:
+
+<LinkedMath>
+$$
+\htmlClass{term-posterior}{\bel(x_t)}
+\;=\;
+\eta\,
+\htmlClass{term-measurement}{p(z_t \mid x_t)}
+\int
+\htmlClass{term-prediction}{p(x_t \mid u_t, x_{t-1})}\,
+\htmlClass{term-prior}{\bel(x_{t-1})}\,
+dx_{t-1}
+$$
+</LinkedMath>
+
+Point at any coloured term above and the matching layer in the Hallway Belief Machine comes
+forward while the rest fade. The colours are not decoration: the green factor in that equation
+*is* the green dashed curve in the figure, and the purple result *is* the purple histogram.
 
 Line 2 is prediction — a convolution of the previous belief with the motion model. Line 3 is
 correction — a pointwise product with the measurement likelihood, renormalized by
@@ -228,7 +268,9 @@ The failure has a characteristic signature: the filter becomes **overconfident**
 correlated errors as independent evidence and multiplies them together, so the belief keeps
 sharpening while the truth walks out of it.
 
-<MarkovBreaker />
+<Deferred>
+  <MarkovBreaker />
+</Deferred>
 
 There are exactly two honest repairs, and both appear later in the book:
 
@@ -248,7 +290,9 @@ space, and line 3 requires a function defined at every point of that space. Ever
 is a choice of representation for $\bel$ that turns those into finite computation — and every one
 of those choices trades away something.
 
-<FilterFamilyTree />
+<Deferred>
+  <FilterFamilyTree />
+</Deferred>
 
 That tree is the map of the next three chapters. The Kalman filter says: assume the belief is
 Gaussian and the models are linear, and the integral becomes matrix algebra. The particle filter
@@ -395,6 +439,22 @@ Normalize: $\bel = (0.1,\, 0.4,\, 0.1,\, 0.4)$. Two hypotheses now hold 80% of t
 them, and the filter has committed to neither. The evidence $0.5$ says the reading was neither
 surprising nor especially informative — which is right, since half the corridor has a door.
 
+Now carry it one step further yourself. The robot moves one cell to the right, with a motion model
+that lands where commanded 80% of the time and overshoots by one cell 20% of the time. What is the
+new belief in cell 2?
+
+<CheckAnswer
+  id="ch05.worked"
+  prompt="After the move, what is bel(cell 2)?"
+  answer={0.34}
+  tolerance={0.005}
+>
+Cell 2 receives 80% of cell 1's mass and 20% of cell 0's:
+$0.8 \times 0.4 + 0.2 \times 0.1 = 0.34$. Notice that the peak has moved *and* flattened — it was
+0.4 before the move and is 0.34 after. Prediction never sharpens, which is the claim Exercise 3
+asks you to prove.
+</CheckAnswer>
+
 ```rust title="crates/pr-core/src/filters/histogram.rs (tests)"
 #[test]
 fn worked_example_ch05_door_sighting() {
@@ -436,15 +496,34 @@ ever disagree, the test is what settles it.
   </Exercise>
 
   <Exercise level="C" difficulty={1} title="Predict, then check">
-    In the Hallway Belief Machine, set motion noise to its maximum and sensing off. Predict what
-    the belief looks like after twenty steps before you press play. Now turn sensing back on and
-    predict how many door sightings it takes to recover a single peak. Were you right?
+    <Predict
+      id="ch05.e4"
+      question="Set motion noise to its maximum and switch sensing off. After twenty steps, what does the belief look like?"
+      options={[
+        { label: 'A single peak that has drifted away from the truth',
+          because: 'Drift would require the filter to be wrong about the mean. It is not — prediction is unbiased. What it loses is certainty, not accuracy.' },
+        { label: 'A flat belief, spread over the whole corridor', correct: true,
+          because: 'Right. Each prediction convolves with the motion kernel, and repeated convolution drives any distribution on a loop toward the uniform one. Entropy rises every step and nothing pushes it back down.' },
+        { label: 'Three peaks, one at each door',
+          because: 'Doors only enter through the measurement model. With sensing off the filter has never heard of them.' },
+      ]}
+    >
+    Now turn sensing back on. The belief does not recover in one sighting: the first correction
+    reinstates three peaks, and only the *sequence* — door, gap, gap, door — collapses them to one.
+    Count how many sightings it actually takes, then try it again with the sensor made unreliable.
+    </Predict>
   </Exercise>
 
   <Exercise level="C" difficulty={2} title="Break it deliberately">
     Find a parameter setting where the filter is confidently wrong — the belief has one sharp peak
     that does not contain the true position. What did you have to do to produce it? Which of the
     two Markov repairs would fix it?
+
+    <Hints>
+      <>Confidence comes from correction and is destroyed by prediction. So you want a filter that corrects often and predicts little.</>
+      <>Being <em>wrong</em> as well as confident needs the evidence to mislead. What does a sensor that is right 55% of the time do to a belief, over many readings, if you let the filter keep trusting it?</>
+      <>Turn the sensor's reliability down toward the middle and the step size down toward zero, then let it run. The filter accumulates near-worthless evidence as if it were decisive.</>
+    </Hints>
   </Exercise>
 
   <Exercise level="P" difficulty={2} title="Implement the recursion">

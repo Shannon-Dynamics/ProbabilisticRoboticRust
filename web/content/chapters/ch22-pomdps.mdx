@@ -15,6 +15,8 @@ import { TigerDoorConsole } from '@/components/ch/ch22/tiger-door-console';
 import { AlphaForge } from '@/components/ch/ch22/alpha-forge';
 import { PomcpTreePeek } from '@/components/ch/ch22/pomcp-tree-peek';
 import { CoastalNavigator } from '@/components/ch/ch22/coastal-navigator';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -68,7 +70,9 @@ Cassandra's **tiger problem** (1998), which we will use for every number in this
 every number in it can be checked by hand. Play it before reading further. The widget opens on the
 optimal pilot; take control with **You play** and try to beat it.
 
-<TigerDoorConsole />
+<Deferred>
+  <TigerDoorConsole />
+</Deferred>
 
 Three things are worth noticing, and each is a section of this chapter.
 
@@ -170,12 +174,14 @@ $\alpha^{(k)}$, noise parameters with a subscript, $\alpha_1$, and never both in
 A **partially observable Markov decision process** is [Chapter 21](/chapters/ch21-mdps)'s MDP with
 one thing added and one thing taken away:
 
+<LinkedMath>
 $$
 \big(\, \mathcal{X},\; \mathcal{U},\; \mathcal{Z},\;
 \htmlClass{term-prediction}{p(x' \mid x, u)},\;
 \htmlClass{term-measurement}{p(z \mid x', u)},\;
 r(x, u),\; \gamma,\; b_0 \,\big)
 $$
+</LinkedMath>
 
 Added: the observation set $\mathcal{Z}$ and the measurement model
 $p(z \mid x', u)$ — which is [Chapter 10](/chapters/ch10-sensor-models)'s object, now allowed to
@@ -204,21 +210,25 @@ The tiger, completely specified, is the instance every number below refers to:
 Nothing new happens here at all, and that is the point worth making loudly. Given a belief, an
 action and an observation, the next belief is
 
+<LinkedMath>
 $$
 b'(x') \;=\; \tau(b,u,z)(x') \;=\;
 \eta \; \htmlClass{term-measurement}{p(z \mid x', u)}
 \sum_{x} \htmlClass{term-prediction}{p(x' \mid x, u)}\, \htmlClass{term-prior}{b(x)}
 $$
+</LinkedMath>
 
 which is [Chapter 5](/chapters/ch05-bayes-filter)'s two lines — predict, then correct — with the
 integral become a sum. The normalizer is the **evidence**, and here it stops being housekeeping
 and becomes load-bearing, because it is the *transition probability of the belief MDP*:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{p(z \mid b, u)} \;=\; \eta^{-1} \;=\;
 \sum_{x'} \htmlClass{term-measurement}{p(z \mid x', u)} \sum_x
 \htmlClass{term-prediction}{p(x' \mid x, u)}\, \htmlClass{term-prior}{b(x)}
 $$
+</LinkedMath>
 
 Two consequences that shape everything downstream. First, the belief dynamics are *deterministic*
 given $(u, z)$: all the stochasticity of a POMDP sits in which observation arrives. Second, the
@@ -310,25 +320,30 @@ $$
 
 **Step 2 — substitute the inductive hypothesis into the Bellman backup.**
 
+<LinkedMath>
 $$
 V_T(b) = \max_u \Big[\ \langle r(\cdot,u), b\rangle + \gamma \sum_z
 \htmlClass{term-posterior}{p(z \mid b,u)}\;
 \max_k \big\langle \alpha^{(k)},\, \htmlClass{term-posterior}{\tau(b,u,z)} \big\rangle \Big]
 $$
+</LinkedMath>
 
 **Step 3 — the normalizer cancels. This is the trick.** Write the inner product out and notice
 that $\tau$'s normalizer is precisely the factor sitting in front of it:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{p(z \mid b,u)} \cdot \big\langle \alpha^{(k)}, \tau(b,u,z) \big\rangle
 = \sum_{x'} \alpha^{(k)}(x')\;
 \htmlClass{term-measurement}{p(z \mid x', u)} \sum_x
 \htmlClass{term-prediction}{p(x' \mid x, u)}\, \htmlClass{term-prior}{b(x)}
 $$
+</LinkedMath>
 
 A quantity that looked like *(probability) × (value of a normalized posterior)* is in fact
 **linear in $b$**. Name that linear functional's coefficient vector the **backprojection**:
 
+<LinkedMath>
 $$
 \boxed{\;
 g^{u,z}_k(x) \;=\; \sum_{x'}
@@ -336,6 +351,7 @@ g^{u,z}_k(x) \;=\; \sum_{x'}
 \htmlClass{term-prediction}{p(x' \mid x, u)}\, \alpha^{(k)}(x')
 \;}
 $$
+</LinkedMath>
 
 so that $p(z\mid b,u)\, \langle \alpha^{(k)}, \tau(b,u,z)\rangle = \langle g^{u,z}_k, b\rangle$
 exactly. Read $g^{u,z}_k$ as: *what $\alpha^{(k)}$ is worth, seen from state $x$, through the pair
@@ -390,7 +406,9 @@ Pruning rescues it, and by an enormous margin — but only because most of those
 the maximum anywhere on the simplex. Turn the toggle off in the widget below and watch the counter
 run away while the picture stops being drawable.
 
-<AlphaForge />
+<Deferred>
+  <AlphaForge />
+</Deferred>
 
 For the record, here is what our solver actually produces on the tiger at $\gamma = 0.95$,
 accuracy $0.85$ — candidates generated versus vectors that survive:
@@ -455,11 +473,13 @@ The cheapest approximation is to keep only the first backup and stop. Assume tha
 the fog lifts entirely and the state becomes observable. Then the value of doing $u$ in belief $b$
 is just the average, over states, of Chapter 21's $Q^*$:
 
+<LinkedMath>
 $$
 Q_{\text{MDP}}(b, u) \;=\; \sum_x \htmlClass{term-prior}{b(x)}\, Q^*(x, u),
 \qquad
 \Gamma_{\text{QMDP}} = \big\{\, Q^*(\cdot, u) \;:\; u \in \mathcal{U} \,\big\}
 $$
+</LinkedMath>
 
 This is an $\alpha$-vector set with exactly $|\mathcal{U}|$ members, for any horizon, and it costs
 one Chapter 21 solve. It is also an **upper bound**: $V_{\text{QMDP}}(b) \ge V^*(b)$, because it
@@ -598,7 +618,9 @@ particles that *happen to reach* node $huz$ are, by construction, distributed ac
 $\tau(\dots\tau(b_0,u,z)\dots)$: the observation branching does the conditioning, and the surviving
 particles are the posterior. Sampling *is* the filter.
 
-<PomcpTreePeek />
+<Deferred>
+  <PomcpTreePeek />
+</Deferred>
 
 Two caveats, both inherited from [Chapter 8](/chapters/ch08-nonparametric-filters) and both real.
 **Particle deprivation gets worse with depth**: a node three observations down may hold four
@@ -660,11 +682,13 @@ advantage of being drawable as the width of a ribbon.
 The transitions in the augmented space need $\sigma' = f(\sigma, x, u)$, and here
 [Chapter 6](/chapters/ch06-kalman-filters) hands us the answer in one line of information form:
 
+<LinkedMath>
 $$
 \frac{1}{\sigma'^2} \;=\;
 \frac{1}{\htmlClass{term-prediction}{\sigma^2 + \sigma_m^2}}
 \;+\; \htmlClass{term-measurement}{\nu(x')}
 $$
+</LinkedMath>
 
 Prediction adds variance; correction adds information. The only genuinely new modelling object is
 $\nu(x)$, the **localizability** of a place: how much information one scan taken there delivers. We
@@ -1468,7 +1492,9 @@ come out of the same code. One is told to pretend $\sigma$ is always at its floo
 **certainty-equivalent** planner, which is what "plan a path on the MAP estimate, then track it"
 amounts to. The other is given the honest $\sigma$ dynamics.
 
-<CoastalNavigator />
+<Deferred>
+  <CoastalNavigator />
+</Deferred>
 
 Nothing in the map says "prefer walls". The reward function contains a step cost, a collision
 hazard, and a doorway bonus; the word "wall" appears only inside $\nu(x)$, as the distance to

@@ -77,6 +77,61 @@ export function readPalette(el?: Element | null): Palette {
   };
 }
 
+/** Parse `#rgb`, `#rrggbb`, `rgb()` or `rgba()` into components. */
+function parseColor(c: string): [number, number, number] | null {
+  const s = c.trim();
+  if (s.startsWith('#')) {
+    const hex = s.slice(1);
+    if (hex.length === 3) {
+      return [
+        parseInt(hex[0] + hex[0], 16),
+        parseInt(hex[1] + hex[1], 16),
+        parseInt(hex[2] + hex[2], 16),
+      ];
+    }
+    if (hex.length >= 6) {
+      return [
+        parseInt(hex.slice(0, 2), 16),
+        parseInt(hex.slice(2, 4), 16),
+        parseInt(hex.slice(4, 6), 16),
+      ];
+    }
+    return null;
+  }
+  const m = s.match(/rgba?\(([^)]+)\)/);
+  if (!m) return null;
+  const parts = m[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+  if (parts.length < 3 || parts.some(Number.isNaN)) return null;
+  return [parts[0], parts[1], parts[2]];
+}
+
+const fade = (c: string, alpha: number) => {
+  const rgb = parseColor(c);
+  return rgb ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})` : c;
+};
+
+/**
+ * Mute every estimation role except the one the reader is pointing at.
+ *
+ * This is what makes the book's colour convention operable: because every
+ * widget already draws its prior in `p.prior` and its measurement in
+ * `p.measurement`, fading the palette itself makes *all* of them respond to a
+ * hovered equation term without a single widget knowing that the feature
+ * exists. Chrome colours are left alone — the map and the grid should not
+ * flicker when the reader points at an equation.
+ */
+export function mutePalette(p: Palette, hovered: RoleName | null): Palette {
+  if (!hovered) return p;
+  const roles: RoleName[] = ['prior', 'prediction', 'measurement', 'posterior', 'truth'];
+  const out = { ...p };
+  for (const role of roles) {
+    if (role !== hovered) out[role] = fade(p[role], 0.1);
+  }
+  return out;
+}
+
+export type RoleName = 'prior' | 'prediction' | 'measurement' | 'posterior' | 'truth';
+
 /** Build a viewport that fits a world rectangle into a canvas, preserving aspect. */
 export function fitViewport(
   world: { minX: number; minY: number; maxX: number; maxY: number },

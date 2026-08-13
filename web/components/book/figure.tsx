@@ -14,7 +14,7 @@ export function Figure({ children, caption, id, wide }: FigureProps) {
     <figure
       id={id}
       className={`my-8 ${id ? 'scroll-mt-24' : ''} ${
-        wide ? 'lg:-mx-8 xl:-mx-14 2xl:-mx-20' : ''
+        wide ? 'pr-figure-wide' : ''
       }`}
     >
       {/* Wide content scrolls here, never on the page. */}

@@ -15,6 +15,8 @@ import { GaussianPlayground } from '@/components/ch/ch02/gaussian-playground';
 import { BlobMultiplier } from '@/components/ch/ch02/blob-multiplier';
 import { SamplingConvergence } from '@/components/ch/ch02/sampling-convergence';
 import { SliceVsSquash } from '@/components/ch/ch02/slice-vs-squash';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -61,6 +63,7 @@ division at the end doing?
 Here is the whole computation, in one line per step. Multiply the prior by the likelihood, cell by
 cell:
 
+<LinkedMath>
 $$
 \htmlClass{term-prior}{0.1} \cdot \htmlClass{term-measurement}{0.6} = 0.06
 \quad\text{(three doors)}
@@ -68,15 +71,18 @@ $$
 \htmlClass{term-prior}{0.1} \cdot \htmlClass{term-measurement}{0.2} = 0.02
 \quad\text{(seven walls)}
 $$
+</LinkedMath>
 
 Those ten numbers sum to $3(0.06) + 7(0.02) = 0.32$, not to one, so they are not yet a
 distribution — they are the right *shape* at the wrong scale. Divide by the total:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{0.06 / 0.32 = 0.1875}
 \qquad\qquad
 \htmlClass{term-posterior}{0.02 / 0.32 = 0.0625}
 $$
+</LinkedMath>
 
 That is Bayes rule, and the $0.32$ is the only part that needs a name. It is the probability of
 seeing what we saw, averaged over everywhere we might have been, and it is a constant with respect
@@ -88,7 +94,9 @@ Now make the corridor continuous. Rusty's odometry says it has travelled about 5
 2 m. Its wall-range sensor says 6.5 m, and it is a better sensor. Multiplying ten numbers by ten
 numbers becomes multiplying one curve by another, and the widget below does exactly that, live.
 
-<BlobMultiplier />
+<Deferred>
+  <BlobMultiplier />
+</Deferred>
 
 Three things in that figure are worth more than the algebra that justifies them later.
 
@@ -126,7 +134,9 @@ else. That is the entire premise of the Kalman filter.
 So the covariance matrix deserves to be understood as geometry before it is understood as algebra.
 Play with it first.
 
-<GaussianPlayground />
+<Deferred>
+  <GaussianPlayground />
+</Deferred>
 
 The figure shows the same distribution three ways at once, and each way answers a different
 question. The **cloud** answers *what would I see if I drew from it* — and notice that the 500 dots
@@ -220,19 +230,23 @@ $$
 
 **Step 2 — divide.** For $p(z) > 0$,
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{p(x \mid z)}
 = \frac{\htmlClass{term-measurement}{p(z \mid x)}\;\htmlClass{term-prior}{p(x)}}{p(z)}
 $$
+</LinkedMath>
 
 **Step 3 — notice the denominator does not depend on $x$.** Expanding it by total probability,
 $p(z) = \int p(z \mid x')\,p(x')\,dx'$, which has integrated $x$ away. It is therefore the same
 number for every $x$ in the posterior, and we may name it $1/\eta$ and defer it:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{p(x \mid z)}
 = \eta\; \htmlClass{term-measurement}{p(z \mid x)}\; \htmlClass{term-prior}{p(x)}
 $$
+</LinkedMath>
 
 **The version with background knowledge.** Every rule above may be conditioned on further variables
 without changing its form. Conditioning on $y$ throughout gives
@@ -560,17 +574,21 @@ most common error in a first estimation course.
 <Derivation title="Marginals copy a block; conditionals take a Schur complement" result="\Sigma_{a|b} = \Sigma_{aa} - \Sigma_{ab}\Sigma_{bb}^{-1}\Sigma_{ba}">
 **Statement.** The marginal is
 
+<LinkedMath>
 $$
 p(x_a) = \Normal\!\left(x_a;\; \htmlClass{term-prior}{\mu_a},\; \htmlClass{term-prior}{\Sigma_{aa}}\right)
 $$
+</LinkedMath>
 
 and the conditional, for an observed value $x_b = \beta$, is
 
+<LinkedMath>
 $$
 p(x_a \mid x_b = \beta) = \Normal\!\left(x_a;\;
 \htmlClass{term-posterior}{\mu_a + \Sigma_{ab}\Sigma_{bb}^{-1}(\beta - \mu_b)},\;
 \htmlClass{term-posterior}{\Sigma_{aa} - \Sigma_{ab}\Sigma_{bb}^{-1}\Sigma_{ba}}\right)
 $$
+</LinkedMath>
 
 **Sketch — the marginal.** Integrating $x_b$ out of the joint density means completing the square in
 $x_b$ and integrating that Gaussian to one; what survives is a Gaussian in $x_a$ whose parameters
@@ -625,7 +643,9 @@ discovers the fill-in it leaves behind, and it is why
 than done freely.
 </Derivation>
 
-<SliceVsSquash />
+<Deferred>
+  <SliceVsSquash />
+</Deferred>
 
 ### Entropy
 
@@ -688,7 +708,9 @@ enormous advantage over moments — they can represent *any* shape, including th
 of [Chapter 5](/chapters/ch05-bayes-filter) that no Gaussian can express — and one enormous
 disadvantage, which is that $1/\sqrt{N}$ is a miserable rate.
 
-<SamplingConvergence />
+<Deferred>
+  <SamplingConvergence />
+</Deferred>
 
 Both halves of that widget are worth internalizing before
 [Chapter 8](/chapters/ch08-nonparametric-filters) turns samples into a filter. Ten samples look
@@ -913,23 +935,29 @@ pub fn sample_normal_distribution(b: f64, rng: &mut impl Rng) -> f64 {
 Rusty's odometry gives a prior $\Normal(5.0,\, 4.0)$ — 5 m, standard deviation 2 m. The wall-range
 sensor gives a likelihood $\Normal(6.5,\, 1.0)$. Convert both, add, convert back:
 
+<LinkedMath>
 $$
 \htmlClass{term-prior}{\Omega_1 = \tfrac{1}{4} = 0.25} \;+\;
 \htmlClass{term-measurement}{\Omega_2 = \tfrac{1}{1} = 1.00} \;=\;
 \htmlClass{term-posterior}{\Omega = 1.25}
 $$
+</LinkedMath>
 
+<LinkedMath>
 $$
 \htmlClass{term-prior}{\xi_1 = \tfrac{5.0}{4} = 1.25} \;+\;
 \htmlClass{term-measurement}{\xi_2 = \tfrac{6.5}{1} = 6.50} \;=\;
 \htmlClass{term-posterior}{\xi = 7.75}
 $$
+</LinkedMath>
 
+<LinkedMath>
 $$
 \sigma^2 = \frac{1}{\Omega} = \htmlClass{term-posterior}{0.8}
 \qquad
 \mu = \frac{\xi}{\Omega} = \frac{7.75}{1.25} = \htmlClass{term-posterior}{6.2}
 $$
+</LinkedMath>
 
 Sanity-check the two claims from the widget against these numbers. The posterior variance $0.8$ is
 below both $4.0$ and $1.0$. The posterior mean $6.2$ sits $80\%$ of the way from the prior to the

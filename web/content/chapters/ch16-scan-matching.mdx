@@ -15,6 +15,8 @@ import { IcpStepper } from '@/components/ch/ch16/icp-stepper';
 import { LoopSnap } from '@/components/ch/ch16/loop-snap';
 import { ScoreTerrain } from '@/components/ch/ch16/score-terrain';
 import { RustSlamControlRoom } from '@/components/ch/ch16/rustslam-control-room';
+import { LinkedMath } from '@/components/book/linked-math';
+import { Deferred } from '@/components/sim/deferred';
 
 <Overview
   goals={[
@@ -59,7 +61,9 @@ that anything has gone amiss. Over one eighteen-metre lap the raw odometry ends 
 from the truth, and a map assembled from it would not be a map of the Apartment at all — it would
 be two overlapping maps, drawn metres apart.
 
-<LoopSnap />
+<Deferred>
+  <LoopSnap />
+</Deferred>
 
 Watch a full lap before reading on. There are three separate things happening and it is worth
 naming them now, because the rest of the chapter is those three things in order.
@@ -95,7 +99,9 @@ exposure resolves — and the transform you applied to make that happen *is* the
 two viewpoints. That is the entire idea. Everything else is deciding which point corresponds to
 which, and what to do when you are wrong about it.
 
-<IcpStepper />
+<Deferred>
+  <IcpStepper />
+</Deferred>
 
 Two observations from that widget drive the mathematics.
 
@@ -135,20 +141,24 @@ unsupervised.
 Assume — and it is an assumption, whose bill arrives when we ask a match how confident it is —
 that each matched target point is a noisy observation of the transformed source point:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{\mathbf{q}_{c(k)}} = T\,\htmlClass{term-prediction}{\mathbf{p}_k} + \boldsymbol{\epsilon}_k,
 \qquad \boldsymbol{\epsilon}_k \sim \Normal(\mathbf{0}, \sigma^2 \mathbf{I}).
 $$
+</LinkedMath>
 
 The beams are taken to be conditionally independent given the pose, exactly as in
 [Chapter 10](/chapters/ch10-sensor-models)'s beam model and with exactly the same caveat. Then the
 likelihood factorizes, the log turns the product into a sum, and the Gaussian turns the sum into
 squares:
 
+<LinkedMath>
 $$
 \htmlClass{term-posterior}{T^\star} = \arg\max_T \prod_k p(\mathbf{q}_{c(k)} \mid T, \mathbf{p}_k)
 = \arg\min_{T \in \SEtwo} \sum_k \norm{T\mathbf{p}_k - \mathbf{q}_{c(k)}}^2 .
 $$
+</LinkedMath>
 
 Least squares *is* maximum likelihood here. That one line is the bridge to
 [Chapter 15](/chapters/ch15-factor-graphs): a scan match is a factor, its cost is a negative
@@ -264,9 +274,11 @@ the same flat wall, sliding one along the wall changes nothing physical — the 
 an artefact of which point happened to be nearest, not a real disagreement. Point-to-plane
 penalizes only the component along the surface normal (Chen and Medioni, 1992):
 
+<LinkedMath>
 $$
 T^\star = \arg\min_{T} \sum_k \Big( \mathbf{n}_k\T \big( \mathbf{R}\mathbf{p}_k + \mathbf{t} - \htmlClass{term-measurement}{\mathbf{q}_{c(k)}} \big) \Big)^2 .
 $$
+</LinkedMath>
 
 <Derivation title="The 3×3 normal equations for point-to-plane in SE(2)" result="\mathbf{a}_k^\mathsf{T} = (\tilde{\mathbf{p}}_k \times \mathbf{n}_k,\; n_x,\; n_y)">
 There is no closed form: the residual is linear in $\mathbf{t}$ but trigonometric in $\theta$.
@@ -323,10 +335,12 @@ Distributions Transform (Biber and Straßer, 2003) removes the discrete variable
 Partition the target into cells, fit one Gaussian per occupied cell, and score a candidate
 transform by how likely the source points are under that mixture:
 
+<LinkedMath>
 $$
 s(T) = \sum_k \sum_{i \in \mathcal{N}(k)} \exp\!\Big( -\tfrac{1}{2}\, \mathbf{d}_{ik}\T \boldsymbol{\Sigma}_i^{-1} \mathbf{d}_{ik} \Big),
 \qquad \mathbf{d}_{ik} = T\mathbf{p}_k - \htmlClass{term-prior}{\boldsymbol{\mu}_i}.
 $$
+</LinkedMath>
 
 Up to mixture weights this is the log-likelihood of the sweep under a Gaussian-mixture map. Read
 the other way it is [Chapter 10](/chapters/ch10-sensor-models)'s likelihood field with an
@@ -371,7 +385,9 @@ over the $3\times3$ neighbourhood (Biber and Straßer use four overlapping grids
 
 ### The shape of the cost
 
-<ScoreTerrain />
+<Deferred>
+  <ScoreTerrain />
+</Deferred>
 
 That widget is the argument of the last three sections, drawn. Two things are worth reading off it
 numerically, because they are the two reasons a scan matcher fails.
@@ -395,11 +411,13 @@ information matrix in the next section is for.
 A relative-pose measurement $Z_{ij}$ between poses $T_i$ and $T_j$ is a factor whose residual lives
 in the tangent space of the group:
 
+<LinkedMath>
 $$
 \htmlClass{term-measurement}{\mathbf{e}_{ij}} = \log\!\big( Z_{ij}^{-1}\, T_i^{-1} T_j \big)^{\vee} \in \R^3,
 \qquad
 \text{cost} = \sum_{(i,j)} \rho\!\big( \mathbf{e}_{ij}\T \mathbf{\Omega}_{ij}\, \mathbf{e}_{ij} \big).
 $$
+</LinkedMath>
 
 Equivalently, in the book's manifold operators, $\mathbf{e}_{ij} = T_j \bminus (T_i \circ Z_{ij})$:
 "where $j$ actually is, minus where the measurement says it should be", measured in the tangent
@@ -975,7 +993,9 @@ $\chi^2: 0.36 \to 0.12$ with poses $0,\, 1.2,\, 2.4$ in both implementations.
 
 Front end, back end, gate, map. One lap of the Apartment's corridor, east and back.
 
-<RustSlamControlRoom />
+<Deferred>
+  <RustSlamControlRoom />
+</Deferred>
 
 ### What the system actually buys
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useWidgetVisible } from '@/components/sim/deferred';
 
 export interface SimulationOptions<S> {
   /** Build the initial state. Called on mount and on every reset/re-seed. */
@@ -54,6 +55,11 @@ export function useSimulation<S>(opts: SimulationOptions<S>): Simulation<S> {
   const [playing, setPlaying] = useState(autoplay);
   const [speed, setSpeed] = useState(fps);
 
+  // A widget scrolled out of view keeps its state but stops spending frames.
+  // `null` means it is not inside a <Deferred> boundary, so it always runs.
+  const onScreen = useWidgetVisible();
+  const active = playing && onScreen !== false;
+
   // Latest values live in refs so the RAF loop never restarts mid-run.
   const stateRef = useRef(state);
   const tickRef = useRef(0);
@@ -74,7 +80,7 @@ export function useSimulation<S>(opts: SimulationOptions<S>): Simulation<S> {
   const finished = maxTicks !== undefined && tick >= maxTicks && !loop;
 
   useEffect(() => {
-    if (!playing) {
+    if (!active) {
       lastRef.current = null;
       return;
     }
@@ -113,7 +119,7 @@ export function useSimulation<S>(opts: SimulationOptions<S>): Simulation<S> {
 
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [playing, speed, maxTicks, loop, init, seed, advance]);
+  }, [active, speed, maxTicks, loop, init, seed, advance]);
 
   const reset = useCallback(() => {
     tickRef.current = 0;
