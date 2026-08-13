@@ -1035,6 +1035,74 @@ def render_component(comp: dict) -> str:
             return "\\begin{equation*}\n" + tex + "\n\\end{equation*}\n"
         return "$" + tex + "$"
 
+    if name == "Scrub":
+        # A draggable number is just a number on paper — but it must still be
+        # there, or the sentence it sits inside loses its subject.
+        try:
+            value = float(attrs.get("value", 0))
+        except (TypeError, ValueError):
+            value = 0.0
+        try:
+            step = float(attrs.get("step", 0.01))
+        except (TypeError, ValueError):
+            step = 0.01
+        digits = max(0, min(3, -int(round(__import__("math").log10(step))))) if step > 0 else 2
+        unit = attrs.get("unit", "")
+        shown = f"{value:.{digits}f}"
+        role = attrs.get("role")
+        num = ("\\%s{%s}" % (role if role != "truth" else "truthterm", shown)) if role else shown
+        return num + (("\\," + escape_text(str(unit))) if unit else "")
+
+    if name == "LinkedMath":
+        # The hover linkage is a screen affordance; the mathematics is the same.
+        return convert_body(body)
+
+    if name == "RoleTag":
+        role = str(attrs.get("role", "prior"))
+        cmd = role if role != "truth" else "truthterm"
+        inner = convert_body(body).strip() or role
+        return "\\%s{%s}" % (cmd, inner)
+
+    if name == "Predict":
+        question = inline(str(attrs.get("question", "")))
+        options = attrs.get("options") or []
+        out = ["\\begin{shcallout}{shConceptual}{\\faEye}{Predict first}",
+               question, "\\begin{itemize}"]
+        for opt in options:
+            if not isinstance(opt, dict):
+                continue
+            mark = "$\\checkmark$\\ " if opt.get("correct") else ""
+            line = mark + inline(str(opt.get("label", "")))
+            because = opt.get("because")
+            if because:
+                line += ("\\newline{\\footnotesize\\color{shInkMuted}"
+                         + inline(str(because)) + "}")
+            out.append("  \\item " + line)
+        out.append("\\end{itemize}")
+        rest = convert_body(body).strip()
+        if rest:
+            out.append(rest)
+        out.append("\\end{shcallout}")
+        return "\n".join(out) + "\n"
+
+    if name == "CheckAnswer":
+        prompt = inline(str(attrs.get("prompt", "")))
+        answer = attrs.get("answer", "")
+        unit = attrs.get("unit", "")
+        out = ["\\begin{shcallout}{shFoundation}{\\faCalculator}{Work it out}", prompt,
+               "\\par\\vspace{3pt}{\\fontsize{9}{11}\\selectfont\\color{shInkMuted}"
+               "\\textbf{Answer.} $" + str(answer) + "$"
+               + ((" " + escape_text(str(unit))) if unit else "") + "}"]
+        rest = convert_body(body).strip()
+        if rest:
+            out.append(rest)
+        out.append("\\end{shcallout}")
+        return "\n".join(out) + "\n"
+
+    if name == "Hints":
+        inner = convert_body(body).strip()
+        return ("\\begin{shnote}[Hints]\n" + inner + "\n\\end{shnote}\n") if inner else ""
+
     if name == "ColorKey":
         return "\\shcolorkey\n"
 
