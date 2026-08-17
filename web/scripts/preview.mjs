@@ -41,8 +41,19 @@ if (!existsSync(ROOT)) {
   process.exit(1);
 }
 
+// A build made for GitHub Pages is mounted under `/<repo>/`, so its asset URLs
+// carry that prefix. Set the same variable here as at build time and the
+// preview serves it from the same place the deployment will. Unset — the usual
+// case — the book is served from the root, exactly as `npm run dev` does.
+const BASE = (process.env.NEXT_PUBLIC_BASE_PATH ?? '').replace(/\/+$/, '');
+
+// The `.html` fallback below is not a convenience: it is what GitHub Pages
+// itself does, and it is why the export needs no trailing slashes.
 function resolve(urlPath) {
-  const clean = normalize(decodeURIComponent(urlPath.split('?')[0])).replace(/^(\.\.[/\\])+/, '');
+  let clean = normalize(decodeURIComponent(urlPath.split('?')[0])).replace(/^(\.\.[/\\])+/, '');
+  if (BASE && (clean === BASE || clean.startsWith(`${BASE}/`))) {
+    clean = clean.slice(BASE.length) || '/';
+  }
   const candidates = [
     join(ROOT, clean),
     join(ROOT, clean, 'index.html'),
@@ -81,5 +92,5 @@ createServer((req, res) => {
   res.writeHead(200, headers);
   createReadStream(file).pipe(res);
 }).listen(PORT, () => {
-  console.log(`Book served with compression at http://localhost:${PORT}`);
+  console.log(`Book served with compression at http://localhost:${PORT}${BASE}`);
 });

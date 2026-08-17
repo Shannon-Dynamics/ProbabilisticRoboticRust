@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { APARTMENT } from '@/lib/sim/world';
@@ -250,12 +251,12 @@ export function FiveUncertainties() {
             </div>
           </dl>
 
-          <a
+          <Link
             href={`/chapters/${source.slug}`}
             className="mt-3 inline-block font-mono text-[0.72rem] text-fd-primary hover:underline"
           >
             {source.chapter} →
-          </a>
+          </Link>
         </div>
       </div>
     </WidgetFrame>

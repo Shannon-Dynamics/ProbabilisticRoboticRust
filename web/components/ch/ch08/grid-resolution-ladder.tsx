@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { SimCanvas } from '@/components/sim/sim-canvas';
@@ -172,7 +173,7 @@ export function GridResolutionLadder() {
           region that is useless to a planner. The bottom rung separates them on the first sighting.
           Then move the dimension slider. The 1-D story is comfortable; at <em>d</em> = 3 — an{' '}
           <em>(x, y, θ)</em> pose grid, which is what{' '}
-          <a href="/chapters/ch12-localization-global">Chapter 12</a> actually needs — the fine rung
+          <Link href="/chapters/ch12-localization-global">Chapter 12</Link> actually needs — the fine rung
           is asking for 134 million cells and a naive prediction step of 10<sup>16</sup> operations.
           That number is the entire reason particles exist.
         </>

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useMemo, useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { SimCanvas } from '@/components/sim/sim-canvas';
@@ -291,7 +292,7 @@ export function MomentsVsInformation() {
           panels are computing the same numbers. The ledger below says what that costs. Push the
           state dimension up and the two forms trade places — and if you are wondering why anyone
           would pay the information filter&rsquo;s prediction bill,
-          <a href="/chapters/ch15-factor-graphs"> Chapter 15</a> is the answer: when Ω is sparse,
+          <Link href="/chapters/ch15-factor-graphs"> Chapter 15</Link> is the answer: when Ω is sparse,
           you never form Σ at all.
         </>
       }

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { ActionButton, ButtonRow, Transport } from '@/components/sim/controls';
@@ -187,7 +188,7 @@ export function DepletionMeter() {
           about anything. Selective resampling buys the middle, and note how little it buys: even at
           <em> N</em>_eff &lt; <em>M</em>/2 it still fires on roughly half the steps here. Nothing on
           this panel restores diversity; that needs the injections of{' '}
-          <a href="/chapters/ch08-nonparametric-filters">Chapter 8</a>.
+          <Link href="/chapters/ch08-nonparametric-filters">Chapter 8</Link>.
         </>
       }
     >

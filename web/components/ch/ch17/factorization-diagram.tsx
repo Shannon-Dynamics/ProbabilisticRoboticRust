@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 
@@ -88,7 +89,7 @@ export function FactorizationDiagram() {
           Toggle between the two ways of handling the trajectory. <em>Marginalize</em> it — integrate
           it out, as EKF SLAM does — and every landmark becomes correlated with every other one
           (the purple arcs), giving the dense (3+2N)×(3+2N) covariance of
-          <a href="/chapters/ch14-ekf-slam"> Chapter 14</a>. <em>Condition</em> on it — assume it
+          <Link href="/chapters/ch14-ekf-slam"> Chapter 14</Link>. <em>Condition</em> on it — assume it
           known, as a single particle does — and the arcs vanish: the map is N independent 2×2
           problems, and the particle can solve each one in closed form. Click a landmark to see
           which poses observed it.

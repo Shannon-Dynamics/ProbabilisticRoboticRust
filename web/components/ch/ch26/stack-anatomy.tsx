@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { SimCanvas } from '@/components/sim/sim-canvas';
@@ -274,12 +275,12 @@ export function StackAnatomy() {
           <div className="p-3">
             <div className="flex items-baseline justify-between gap-2">
               <h4 className="font-display text-base font-semibold">{detail.label}</h4>
-              <a
+              <Link
                 href={`/chapters/${detail.chapterSlug}`}
                 className="font-mono text-[0.7rem] text-fd-primary hover:underline"
               >
                 Ch. {detail.chapter}
-              </a>
+              </Link>
             </div>
 
             <dl className="mt-2.5 space-y-2">

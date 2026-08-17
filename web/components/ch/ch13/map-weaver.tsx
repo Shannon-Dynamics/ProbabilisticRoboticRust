@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { SimCanvas } from '@/components/sim/sim-canvas';
@@ -379,7 +380,7 @@ export function MapWeaver() {
           <strong>pose oracle off</strong>: the identical scans, integrated at Rusty&rsquo;s own
           dead-reckoned poses, smear the whole apartment into a double exposure. That is the fiction
           this chapter is built on, and it is why{' '}
-          <a href="/chapters/ch14-ekf-slam">Chapter 14</a> exists.
+          <Link href="/chapters/ch14-ekf-slam">Chapter 14</Link> exists.
         </>
       }
     >

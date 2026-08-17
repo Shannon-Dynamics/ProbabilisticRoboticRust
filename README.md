@@ -22,6 +22,11 @@ The print edition is *generated* from the web edition, so the two cannot drift
 apart. Even the printed descriptions of the interactive figures are extracted
 from the React components themselves.
 
+The web edition is published to
+**<https://shannon-dynamics.github.io/ProbabilisticRoboticRust/>** from `main` on
+every push — see [`web/README.md`](web/README.md#deployment) for how the build is
+mounted under that sub-path.
+
 ```sh
 cd web && npm install && npm run dev     # read it locally
 cd web && npm run verify                 # checks + static export

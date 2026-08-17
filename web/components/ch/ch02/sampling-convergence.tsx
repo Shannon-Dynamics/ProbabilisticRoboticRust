@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useMemo } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { ControlPanel, Slider, Transport } from '@/components/sim/controls';
@@ -144,7 +145,7 @@ export function SamplingConvergence() {
           right panel, which is the same run on log–log axes: the blue error rides the gray{' '}
           <code>σ/√N</code> line, a slope of −½. Buying one more decimal digit of accuracy costs a
           hundred times the samples. That single fact sets the particle counts in{' '}
-          <a href="/chapters/ch08-nonparametric-filters">Chapter 8</a> and explains why nobody runs
+          <Link href="/chapters/ch08-nonparametric-filters">Chapter 8</Link> and explains why nobody runs
           Monte Carlo localization in six dimensions without a very good proposal distribution.
           Re-roll the seed and watch the blue curve take a different random walk under the same
           envelope.

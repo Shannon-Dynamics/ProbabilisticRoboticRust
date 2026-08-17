@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 
@@ -345,12 +346,12 @@ export function SystemArchitectures() {
                 {node.slug ? (
                   <>
                     {' '}
-                    <a
+                    <Link
                       href={`/chapters/${node.slug}`}
                       className="font-mono text-[0.72rem] text-fd-primary hover:underline"
                     >
                       →
-                    </a>
+                    </Link>
                   </>
                 ) : null}
               </dd>

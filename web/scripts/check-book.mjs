@@ -4,12 +4,13 @@
  * `npm run build` proves the site compiles; `npm run check` proves the
  * algorithms are right. This proves the *book* is coherent: every chapter
  * present and correctly labelled, every widget id matching its chapter, every
- * cross-reference resolving, every citation carrying a verifiable locator, and
- * the color code never bypassed with a raw hex.
+ * cross-reference resolving, every citation carrying a verifiable locator, the
+ * color code never bypassed with a raw hex, and every internal link routed
+ * through next/link so it survives being served from a sub-path.
  */
 
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const WEB = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -122,6 +123,33 @@ if (existsSync(CH_DIR)) {
       });
       if (suspicious.length) {
         warn(`${dir}/${f}`, `hardcoded colour(s) ${[...new Set(suspicious)].join(', ')} — use var(--pr-*)`);
+      }
+    }
+  }
+}
+
+// Internal links must go through next/link.
+//
+// The book is deployed to GitHub Pages under `/<repo>/`, and `basePath` only
+// rewrites what Next itself emits: <Link>, next/font, the asset URLs. A raw
+// `<a href="/chapters/…">` keeps pointing at the domain root, so it 404s in
+// production while working perfectly on localhost — exactly the failure that
+// is invisible until it is live. Fragment links (`#w16.1`) are unaffected.
+const walk = (dir) =>
+  readdirSync(dir).flatMap((entry) => {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) return entry === 'node_modules' ? [] : walk(path);
+    return path.endsWith('.tsx') ? [path] : [];
+  });
+
+for (const dir of ['app', 'components', 'lib'].map((d) => join(WEB, d))) {
+  if (!existsSync(dir)) continue;
+  for (const path of walk(dir)) {
+    const src = readFileSync(path, 'utf8');
+    // Every `<a …>` opening tag, then the ones whose href is site-absolute.
+    for (const [tag] of src.matchAll(/<a(?=[\s/>])[^>]*>/g)) {
+      if (/href="\//.test(tag) || /href=\{`\//.test(tag)) {
+        fail(relative(WEB, path), 'raw <a> to an internal path — use next/link so basePath applies');
       }
     }
   }

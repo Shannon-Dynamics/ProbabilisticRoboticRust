@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { SimCanvas } from '@/components/sim/sim-canvas';
@@ -398,7 +399,7 @@ export function DynamicWindowBench() {
           Then switch to the counter pocket, where the goal is two metres north through a wall.{' '}
           <em>Both</em> controllers stall — the escape costs 1.9 m of travel in the wrong direction,
           and no local controller will pay that. Finding the way out is{' '}
-          <a href="/chapters/ch20-motion-planning">Chapter 20</a>&apos;s job; this chapter only
+          <Link href="/chapters/ch20-motion-planning">Chapter 20</Link>&apos;s job; this chapter only
           executes it.
         </>
       }

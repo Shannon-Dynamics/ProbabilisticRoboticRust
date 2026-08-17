@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 
@@ -202,9 +203,9 @@ export function RetrospectiveScorecard() {
 
           <h4 className="mt-3 font-display text-sm font-semibold">
             {v.title}{' '}
-            <a href={`/chapters/${v.slug}`} className="font-mono text-[0.7rem] font-normal text-fd-primary hover:underline">
+            <Link href={`/chapters/${v.slug}`} className="font-mono text-[0.7rem] font-normal text-fd-primary hover:underline">
               {v.chapter}
-            </a>
+            </Link>
           </h4>
 
           <pre className="mt-2 overflow-x-auto rounded-sm border border-fd-border bg-fd-muted/40 p-2 font-mono text-[0.66rem] leading-snug">

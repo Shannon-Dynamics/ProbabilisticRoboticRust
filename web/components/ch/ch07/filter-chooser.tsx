@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 
@@ -348,12 +349,12 @@ export function FilterChooser() {
               <span className="font-mono text-[0.7rem] text-fd-muted-foreground">{panel.sub}</span>
             ) : null}
             {panel.chapter ? (
-              <a
+              <Link
                 href={`/chapters/${panel.chapter.slug}`}
                 className="ms-auto font-mono text-[0.7rem] text-fd-primary hover:underline"
               >
                 Ch. {panel.chapter.n}
-              </a>
+              </Link>
             ) : null}
           </div>
 

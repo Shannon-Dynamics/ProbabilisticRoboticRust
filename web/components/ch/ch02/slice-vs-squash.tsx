@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useMemo, useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { SimCanvas } from '@/components/sim/sim-canvas';
@@ -208,7 +209,7 @@ export function SliceVsSquash() {
           learning <em>what</em> it measured only relocates the estimate. Push ρ to zero and the
           two curves coincide, because an uncorrelated measurement teaches you nothing. This is the
           entire geometry of the Kalman update, and{' '}
-          <a href="/chapters/ch06-kalman-filters">Chapter 6</a> does little more than give the
+          <Link href="/chapters/ch06-kalman-filters">Chapter 6</Link> does little more than give the
           factor Σ<sub>ab</sub>Σ<sub>bb</sub>⁻¹ a name.
         </>
       }

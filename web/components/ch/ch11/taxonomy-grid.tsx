@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Fragment, useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { Toggle } from '@/components/sim/controls';
@@ -270,13 +271,13 @@ export function TaxonomyGrid() {
 
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
             {cell.links.map((l) => (
-              <a
+              <Link
                 key={l.slug}
                 href={`/chapters/${l.slug}`}
                 className="font-mono text-[0.7rem] text-fd-primary hover:underline"
               >
                 {l.label}
-              </a>
+              </Link>
             ))}
           </div>
         </div>

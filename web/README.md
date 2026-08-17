@@ -21,6 +21,7 @@ npm run dev        # development server — slow by design, see below
 npm run build      # typecheck + static export to out/
 npm run preview    # serve the built book with compression (this is what to read)
 npm run check      # numerical self-checks of the algorithm library
+npm run check:book # chapters, widget ids, cross-links, citations, internal links
 npm run typecheck
 ```
 
@@ -37,6 +38,34 @@ needs to.
 
 After adding or renaming a chapter file, regenerate the content index with `npx fumadocs-mdx`
 (the `postinstall` hook also does this).
+
+## Deployment
+
+Pushing to `main` builds the book and publishes it to GitHub Pages
+([`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml)); a pull request runs the same
+checks and stops short of deploying. The workflow enables Pages with the Actions build type on its
+first run, so **Settings → Pages → Source** needs no manual step — but if the repository was ever
+set to *Deploy from a branch*, switch it back to *GitHub Actions* or `deploy-pages` will refuse.
+
+A project site is served from `https://<owner>.github.io/<repo>/`, not the domain root, so the
+export is built with `basePath` set to that prefix. CI reads it from `actions/configure-pages` and
+passes it as `NEXT_PUBLIC_BASE_PATH`; locally the variable is unset and the book mounts at `/`, so
+`dev` and `preview` are unaffected. Two consequences worth remembering:
+
+- **Link internally with `next/link`, never a raw `<a href="/…">`.** `basePath` only rewrites what
+  Next itself emits, so a raw anchor keeps pointing at the domain root — it works perfectly on
+  localhost and 404s in production, which is the worst way for a bug to behave. `npm run check:book`
+  fails the build on one. Markdown links inside MDX are safe: fumadocs renders them through
+  `next/link`. Fragment links (`#w16.1`) are unaffected either way.
+- To reproduce the deployed build locally, set the variable for *both* steps:
+
+  ```sh
+  NEXT_PUBLIC_BASE_PATH=/ProbabilisticRoboticRust npm run build
+  NEXT_PUBLIC_BASE_PATH=/ProbabilisticRoboticRust npm run preview
+  ```
+
+Attaching a custom domain later needs no code change: `configure-pages` reports a root mount and
+`next.config.mjs` normalizes it away.
 
 ## How it fits together
 

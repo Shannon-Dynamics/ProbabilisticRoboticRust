@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useMemo, useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { SimCanvas } from '@/components/sim/sim-canvas';
@@ -404,7 +405,7 @@ export function TwinVision() {
           because they are the same object: self-normalized importance weights. Drag λ down and the
           orange curve becomes a spike while the effective sample size falls toward 1 — the identical
           degeneracy that makes a particle filter collapse in{' '}
-          <a href="/chapters/ch08-nonparametric-filters">Chapter 8</a>, arriving here as jitter in
+          <Link href="/chapters/ch08-nonparametric-filters">Chapter 8</Link>, arriving here as jitter in
           the executed command rather than as a lost robot.
         </>
       }

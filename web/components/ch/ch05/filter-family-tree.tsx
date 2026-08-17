@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 
@@ -218,12 +219,12 @@ export function FilterFamilyTree() {
           <div className="flex items-baseline gap-2">
             <h4 className="font-display text-base font-semibold">{node.label}</h4>
             {node.chapter ? (
-              <a
+              <Link
                 href={`/chapters/${node.slug}`}
                 className="font-mono text-[0.7rem] text-fd-primary hover:underline"
               >
                 Ch. {node.chapter}
-              </a>
+              </Link>
             ) : null}
           </div>
 

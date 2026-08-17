@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { ActionButton, ButtonRow, ControlPanel, Slider, Toggle, Transport } from '@/components/sim/controls';
@@ -163,7 +164,7 @@ export function LogOddsFlipFlop() {
           <strong>clamping off</strong> and re-run: the cell accumulates 40 units of confidence and
           then refuses to change its mind for another 40. Clamp it at ±4 and it recovers in five
           readings. Run one of these per grid cell and you have occupancy grid mapping —{' '}
-          <a href="/chapters/ch13-occupancy-grids">Chapter 13</a> is this box, tiled.
+          <Link href="/chapters/ch13-occupancy-grids">Chapter 13</Link> is this box, tiled.
         </>
       }
     >

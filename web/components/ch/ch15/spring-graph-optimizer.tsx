@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { SimCanvas } from '@/components/sim/sim-canvas';
@@ -334,7 +335,7 @@ export function SpringGraphOptimizer() {
           are controls, and the thick purple spring is the loop closure. Watch the first three
           iterations: nearly all of the correction happens there, because every Jacobian — including
           the one for the first pose, fifty steps ago — is re-evaluated at the newest estimate, which
-          is exactly what <a href="/chapters/ch14-ekf-slam">Chapter 14</a>&apos;s filter structurally
+          is exactly what <Link href="/chapters/ch14-ekf-slam">Chapter 14</Link>&apos;s filter structurally
           cannot do. Then <strong>drag a pose and let go</strong>: the springs pull it back, because
           the MAP estimate <em>is</em> that equilibrium. Now press <strong>inject a false loop
           closure</strong>. Under L2 one bad spring bends the whole map. Switch to Huber and the bad

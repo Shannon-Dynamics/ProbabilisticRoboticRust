@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useMemo, useState } from 'react';
 import { WidgetFrame } from '@/components/sim/widget-frame';
 import { SimCanvas } from '@/components/sim/sim-canvas';
@@ -306,7 +307,7 @@ export function RolloutStorm() {
       wide
       caption={
         <>
-          Rusty is tracking the gray dashed path that <a href="/chapters/ch20-motion-planning">Chapter 20</a>{' '}
+          Rusty is tracking the gray dashed path that <Link href="/chapters/ch20-motion-planning">Chapter 20</Link>{' '}
           planned before anyone moved the chairs. Every frame is one complete control cycle: two
           hundred perturbed plans fan out in orange, each is scored against the green obstacle-cost
           field, and the purple curve is their weight-averaged blend — smoother than any single
